@@ -1,0 +1,24 @@
+.home {
+    position: absolute;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    button.menu-toggle {
+        color: rgb(32, 230, 32);
+    }
+
+    mat-toolbar.header {
+        background-color: rgba(0, 0, 0, 0.842);
+    }
+
+    span.logo {
+        color: rgb(32, 230, 32);
+    }
+}
+
