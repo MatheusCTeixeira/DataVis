@@ -5,28 +5,46 @@ div.home {
     border: 0;
     top: 0;
     left: 0;
+    height: 65px;
 
     width: 100%;
     height: 100%;
 
+
     button.menu-toggle {
-        color: rgb(32, 230, 32);
+        color: lawngreen;
     }
 
     mat-toolbar.header {
-        background-color: rgba(0, 0, 0, 0.842);
+        position: sticky;
+        top: 0;
+        background-color: rgb(32, 32, 32);
+        z-index: 999;
+        // box-shadow: 0px 5px 10px 8px rgba(177, 174, 174, 0.795);
     }
 
     span.logo {
-        color: rgb(32, 230, 32);
+        color: lawngreen;
     }
+}
+div.menu {
+    position: fixed;
+    top: 0;
+    width: 350px;
+    height: 100vh;
+    z-index: 200;
+    background-color: rgb(70, 70, 70);
 }
 
 div.body {
+    position: relative;
+    top: 0;
     display: flex;
     justify-content: center;
     overflow-x: hidden;
-    height: 90%;
+    width: 100%;
+    min-height: 800px;
+    margin-top: 25px;
 }
 
 div.left, div.main, div.right {
@@ -34,17 +52,17 @@ div.left, div.main, div.right {
 }
 
 div.left {
-    height: 50%;
-
+    height: 100%;
 }
 
 div.main {
-    box-sizing: border-box;
+    // box-sizing: border-box;
     padding: 40px 30px;
     width: 70%;
     height: 100%;
-    box-shadow: 5px 0px 10px -5px rgba(94, 88, 88, 0.795), -5px 0px 10px -5px rgba(94, 88, 88, 0.795);
-
+    box-shadow: 5px 0px 10px -5px rgba(177, 174, 174, 0.795),
+                -5px 0px 10px -5px rgba(177, 174, 174, 0.795),
+                0px 0px 0px 0px rgba(177, 174, 174, 0.795);
 
 }
 
@@ -54,8 +72,10 @@ div.right {
 }
 
 div.footer {
+    position: relative;
     width: 100%;
     height: 200px;
-    background-color: rgba(0, 0, 0, 0.842);
+    background-color: rgb(32, 32, 32);
     bottom: 0;
+    z-index: 999;
 }

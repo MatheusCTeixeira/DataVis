@@ -1,15 +1,19 @@
 <div class="home">
 <mat-toolbar class="header">
-  <button mat-icon-button class="menu-toggle" style="position: absolute; left: 10px;">
+  <button
+    mat-icon-button
+    class="menu-toggle"
+    (click)="show=!show;"
+    style="position: absolute; left: 10px;">
     <mat-icon>menu</mat-icon>
   </button>
   <div style="display: flex; justify-content: center; width: 100%;">
     <span class="logo">DataViz</span>
   </div>
 </mat-toolbar>
+
 <div class="body">
   <div class="left">
-    Lorem
 
   </div>
 
@@ -18,12 +22,13 @@
     <div id="barChart" style="height:60vh; width:60vw"></div>
   </div>
 
-
   <div class="right">
-
-    Lorem
+sdfads
   </div>
 
+</div>
+<div class="menu" *ngIf="show">
+  q
 </div>
   <div class="footer">
     Lorem

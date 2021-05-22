@@ -30,7 +30,7 @@ export class AppComponent {
   y: any;
   svg: any;
   g: any;
-
+  show = false;
 
   constructor() {
     this.width = 900 - this.margin.left - this.margin.right;
