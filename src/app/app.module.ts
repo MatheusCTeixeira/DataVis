@@ -8,11 +8,13 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import { BubblesComponent } from './bubbles/bubbles.component';
+import { MapComponent } from './map/map.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BubblesComponent,
+    MapComponent,
   ],
   imports: [
     BrowserModule,
