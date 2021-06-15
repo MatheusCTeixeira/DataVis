@@ -16,23 +16,22 @@ div.home {
     }
 
     mat-toolbar.header {
-        position: sticky;
+        position: absolute;
         top: 0;
         background-color: rgb(32, 32, 32);
         z-index: 999;
-        // box-shadow: 0px 5px 10px 8px rgba(177, 174, 174, 0.795);
     }
 
     span.logo {
-        color: lawngreen;
+        color: rgb(237, 240, 234);
     }
 }
+
 div.menu {
     position: fixed;
     top: 0;
     width: 350px;
     height: 100vh;
-    z-index: 200;
     background-color: rgb(70, 70, 70);
 }
 
@@ -56,14 +55,11 @@ div.left {
 }
 
 div.main {
-    // box-sizing: border-box;
     padding: 40px 30px;
     width: 70%;
     height: 100%;
-    box-shadow: 5px 0px 10px -5px rgba(177, 174, 174, 0.795),
-                -5px 0px 10px -5px rgba(177, 174, 174, 0.795),
-                0px 0px 0px 0px rgba(177, 174, 174, 0.795);
-
+    border-left: 1px solid rgb(75, 73, 73);
+    border-right: 1px solid rgb(75, 73, 73);
 }
 
 div.right {

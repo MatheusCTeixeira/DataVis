@@ -1,3 +1,4 @@
+import { ClassGetter } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
 import * as d3 from "d3";
 import * as d3Geo from "d3-geo"
@@ -21,10 +22,13 @@ export class MapComponent implements OnInit {
 
 
 
-    d3.json("assets/brasil.geojson")
+    d3.json("assets/data.json")
       .then((data: any) => {
 
-        let projection = d3Geo.geoEquirectangular().scale(300);
+        let projection = d3Geo.geoEquirectangular()
+          .scale(300)
+          .center([-15.595833, -56.096944])
+          .fitExtent([[0, 0], [800, 800]], data);
         let geoGenerator = d3Geo.geoPath().projection(projection);
         console.log(data.features.length);
         svg.selectAll("path")
@@ -32,9 +36,9 @@ export class MapComponent implements OnInit {
         .join(
           (enter: any) => enter.append("path")
                             .attr("d", geoGenerator)
-                            .attr("stroke", "red")
+                            .attr("stroke", "#FFF")
                             .attr("stroke-width", 1)
-                            .attr("fill", "none")
+                            .attr("fill", "#AAA")
         );
 
      });

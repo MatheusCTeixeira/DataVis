@@ -1,0 +1,14 @@
+.controls {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+}
+
+.panel {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    svg {
+        width: 100%;
+    }
+}

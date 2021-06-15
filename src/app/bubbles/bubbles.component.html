@@ -1,9 +1,10 @@
-<p>Particles :D</p>
-<button (click)="drawMore()">Start</button>
-<button (click)="increaseSpeed()">+ Speed</button>
-<button (click)="decreaseSpeed()">- Speed</button>
-<button (click)="moreParticles()">+ Particles</button>
-<button (click)="lessParticles()">- Particles</button>
-<div>
+<div class="controls">
+    <button mat-raised-button (click)="drawMore()">Start</button>
+    <button mat-raised-button color="primary" (click)="increaseSpeed()">+ Speed</button>
+    <button mat-raised-button color="warn" (click)="decreaseSpeed()">- Speed</button>
+    <button mat-raised-button color="primary" (click)="moreParticles()">+ Particles</button>
+    <button mat-raised-button color="warn" (click)="lessParticles()">- Particles</button>
+</div>
+<div class="panel">
     <svg></svg>
 </div>
