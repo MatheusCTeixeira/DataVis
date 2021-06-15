@@ -1,0 +1,37 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "name": "Amapá",
+          "abbreviation": "AP"
+        },
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [
+                  -50.42514038,
+                  1.86680496
+                ],
+                [
+                  -50.37652588,
+                  1.88180602
+                ],
+                [
+                  -50.35680389,
+                  1.89597297
+                ],
+                [
+                  -50.42514038,
+                  1.86680496
+                ]
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  }
