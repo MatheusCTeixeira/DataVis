@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as d3 from "d3";
 
 @Component({
   selector: 'app-logo',
@@ -10,22 +11,23 @@ export class LogoComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.setTextAnimation(0.1, 5.0, 2, 'linear', '#fff', false);
+    setTimeout(
+      () => this.setTextAnimation(0.3, 5.0, 2, 'linear', '#fff', false), 3E2);
   }
 
   setTextAnimation(delay, duration, strokeWidth, timingFunction, strokeColor,repeat) {
-    let paths = document.querySelectorAll("path");
-    let mode=repeat?'infinite':'forwards'
-    for (let i = 0; i < paths.length; i++) {
-        const path = paths[i];
-        const length = path.getTotalLength();
-        path.style["stroke-dashoffset"] = `${length}px`;
-        path.style["stroke-dasharray"] = `${length}px`;
-        path.style["stroke-width"] = `${strokeWidth}px`;
-        path.style["stroke"] = `${strokeColor}`;
-        path.style["animation"] = `${duration}s svg-text-anim ${mode} ${timingFunction}`;
-        path.style["animation-delay"] = `${i * delay}s`;
-    }
+    let mode=repeat?'infinite':'forwards';
+    const length = 20;
+    const func = function (d, i){ return `${(<SVGPathElement>this).getTotalLength()}px`; };
+    d3.select("#logo")
+      .selectAll("path")
+        .style("stroke-dashoffset", func)
+        .style("stroke-dasharray", func)
+        .style("stroke-width", `${strokeWidth}px`)
+        .style("stroke", `${strokeColor}`)
+        .style("animation", `${duration}s svg-text-anim ${mode} ${timingFunction}`)
+        .style("animation-delay", (d, i) => `${i * delay}s`);
+
 }
 
 }
