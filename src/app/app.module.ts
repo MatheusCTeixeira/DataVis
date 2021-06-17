@@ -9,12 +9,14 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import { BubblesComponent } from './bubbles/bubbles.component';
 import { MapComponent } from './map/map.component';
+import { LogoComponent } from './logo/logo.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BubblesComponent,
     MapComponent,
+    LogoComponent,
   ],
   imports: [
     BrowserModule,

@@ -20,9 +20,12 @@ export class BubblesComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    this.svg = d3.select("svg")
-          .attr("width", "100%")
-          .attr("height", 700);
+    this.svg = d3.select("div#bubbles")
+            .attr("width", "700px")
+            .attr("height", "700px")
+          .append("svg")
+            .attr("width", 700)
+            .attr("height", 700);
 
     // this.drawMore();
 
