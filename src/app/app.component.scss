@@ -1,5 +1,8 @@
+* {
+    font-family: lato;
+}
+
 div.home {
-    position: absolute;
     padding: 0;
     margin: 0;
     border: 0;
@@ -10,16 +13,9 @@ div.home {
     width: 100%;
     height: 100%;
 
-
-    button.menu-toggle {
-        color: lawngreen;
-    }
-
     mat-toolbar.header {
-        position: absolute;
         top: 0;
         background-color: rgb(32, 32, 32);
-        z-index: 999;
     }
 
     span.logo {
@@ -27,27 +23,13 @@ div.home {
     }
 }
 
-div.menu {
-    position: fixed;
-    top: 0;
-    width: 350px;
-    height: 100vh;
-    background-color: rgb(70, 70, 70);
-}
-
 div.body {
-    position: relative;
-    top: 0;
     display: flex;
-    justify-content: center;
-    overflow-x: hidden;
-    width: 100%;
-    min-height: 800px;
-    margin-top: 25px;
 }
 
 div.left, div.main, div.right {
     width: 15%;
+    top: 0px;
 }
 
 div.left {
@@ -55,11 +37,27 @@ div.left {
 }
 
 div.main {
-    padding: 40px 30px;
     width: 70%;
     height: 100%;
     border-left: 1px solid rgb(75, 73, 73);
     border-right: 1px solid rgb(75, 73, 73);
+
+
+    section {
+        h2 {
+            padding: 10px 40px;
+            font-size: 40px;
+            color: rgb(70, 66, 66);
+        }
+
+        h2:hover {
+            color: black;
+            cursor: pointer;
+        }
+        h2:hover:after {
+            content:"#";
+        }
+    }
 }
 
 div.right {
@@ -68,7 +66,6 @@ div.right {
 }
 
 div.footer {
-    position: relative;
     width: 100%;
     height: 200px;
     background-color: rgb(32, 32, 32);
@@ -79,3 +76,54 @@ div.footer {
 .par {
     color: red;
 }
+
+.sticky {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    top: 0;
+}
+
+ul.topics {
+    list-style-type: none;
+
+    li {
+        font-size: 20px;
+        height: 40px;
+    }
+
+    li:hover {
+        cursor: pointer;
+    }
+}
+
+@-webkit-keyframes svg-text-anim {
+    40% {
+       stroke-dashoffset: 0;
+       fill: transparent;
+     }
+     60% {
+       stroke-dashoffset: 0;
+       fill: #ffffff;
+     }
+     100% {
+       stroke-dashoffset: 0;
+       fill: #ffffff;
+     }
+
+ }
+ /* Most browsers */
+ @keyframes svg-text-anim {
+    40% {
+       stroke-dashoffset: 0;
+       fill: transparent;
+     }
+     60% {
+       stroke-dashoffset: 0;
+       fill: #ffffff;
+     }
+     100% {
+       stroke-dashoffset: 0;
+       fill: #ffffff;
+     }
+
+ }

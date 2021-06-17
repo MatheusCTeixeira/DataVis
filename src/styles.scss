@@ -2,3 +2,7 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Ubuntu, Roboto, "Helvetica Neue", sans-serif; }
+@font-face {
+    font-family: lato;
+    src: url(assets/Lato/Lato-Regular.ttf) format("opentype");
+  }

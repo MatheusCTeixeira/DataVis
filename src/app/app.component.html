@@ -1,25 +1,35 @@
 <div class="home">
 <mat-toolbar class="header">
-  <button
-    mat-icon-button
-    class="menu-toggle"
-    (click)="show=!show;"
-    style="position: absolute; left: 10px;">
-    <mat-icon>menu</mat-icon>
-  </button>
   <div style="display: flex; justify-content: center; width: 100%;">
-    <span class="logo">DataVis</span>
+    <span class="logo"> Data Visualization </span>
+
   </div>
 </mat-toolbar>
 
 <div class="body">
-  <div class="left">
-
+  <div class="left sticky">
+    <ul class="topics">
+      <li>Introdução</li>
+      <li>Dados</li>
+      <li>Bots</li>
+      <li>Polarização</li>
+      <li>Caracterização</li>
+      <li>Conclusão</li>
+    </ul>
   </div>
 
   <div class="main">
-    <app-bubbles></app-bubbles>
-    <app-map></app-map>
+    <section>
+      <h2>Introdução</h2>
+      <app-bubbles></app-bubbles>
+    </section>
+    <section><h2>Dados</h2></section>
+    <section><h2>Bots</h2></section>
+    <section>
+      <h2>Caracterização</h2>
+      <app-map></app-map>
+    </section>
+    <section><h2>Conclusão</h2></section>
   </div>
 
   <div class="right">
@@ -27,11 +37,8 @@
   </div>
 
 </div>
-<div class="menu" *ngIf="show">
-  q
-</div>
-  <div class="footer">
-    Lorem
+<div class="footer">
+  Lorem
 
-  </div>
+</div>
 </div>
