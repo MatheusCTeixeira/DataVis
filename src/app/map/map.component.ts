@@ -22,7 +22,7 @@ export class MapComponent implements OnInit {
 
 
 
-    d3.json("assets/data.json")
+    d3.json("assets/gadm36_BRA_1.geojson")
       .then((data: any) => {
 
         let projection = d3Geo.geoEquirectangular()
