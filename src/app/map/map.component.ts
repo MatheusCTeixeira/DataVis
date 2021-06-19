@@ -1,7 +1,9 @@
 import { ClassGetter } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
 import * as d3 from "d3";
-import * as d3Geo from "d3-geo"
+import * as d3Geo from "d3-geo";
+import * as d3ToPng from 'd3-svg-to-png';
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -41,6 +43,39 @@ export class MapComponent implements OnInit {
                             .attr("fill", "#AAA")
         );
 
-     });
+        return projection;
+     })
+     .then(projection => {
+        d3.json("assets/coordinates.json")
+        .then((data: Object) => {
+          const weeks = new Array<Object>();
+          for (let i = 1; i <= 37; ++i)
+            weeks.push(data[`${i}`]);
+
+          let coordinates = [];
+          weeks.forEach((week, i) => {
+            for (let user in week)
+              coordinates = coordinates.concat(week[user]);
+          });
+
+          svg.selectAll("point")
+          .data(coordinates)
+          .join(
+            (enter) => enter.append("circle")
+                        .attr("cx", d => projection(d.coordinates)[0])
+                        .attr("cy", d => projection(d.coordinates)[1])
+                        .attr("r", 3)
+                        .attr("fill", "red")
+
+          )
+
+          //d3ToPng.default("#map > svg", "image.png").then(file => {
+        //});
+
+        return projection;
+     })
+    });
+
+
   }
 }

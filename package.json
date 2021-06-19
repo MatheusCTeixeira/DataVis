@@ -26,6 +26,7 @@
     "d3-geo": "^2.0.1",
     "d3-queue": "^3.0.7",
     "d3-selection": "^2.0.0",
+    "d3-svg-to-png": "^0.1.6",
     "d3-transition": "^2.0.0",
     "d3-zoom": "^2.0.0",
     "rxjs": "~6.6.0",
