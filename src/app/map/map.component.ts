@@ -32,15 +32,14 @@ export class MapComponent implements OnInit {
           .center([-15.595833, -56.096944])
           .fitExtent([[0, 0], [800, 800]], data);
         let geoGenerator = d3Geo.geoPath().projection(projection);
-        console.log(data.features.length);
         svg.selectAll("path")
         .data(data.features)
         .join(
           (enter: any) => enter.append("path")
                             .attr("d", geoGenerator)
-                            .attr("stroke", "#FFF")
+                            .attr("stroke", "#000")
                             .attr("stroke-width", 1)
-                            .attr("fill", "#AAA")
+                            .attr("fill", "#DDD")
         );
 
         return projection;
@@ -64,18 +63,21 @@ export class MapComponent implements OnInit {
             (enter) => enter.append("circle")
                         .attr("cx", d => projection(d.coordinates)[0])
                         .attr("cy", d => projection(d.coordinates)[1])
-                        .attr("r", 3)
-                        .attr("fill", "red")
+                        .attr("r", 2)
+                        .attr("fill", "rgba(255, 0, 0, 0.3)")
 
           )
-
-          //d3ToPng.default("#map > svg", "image.png").then(file => {
-        //});
 
         return projection;
      })
     });
+  }
 
-
+  download() {
+    console.log("Downloading...")
+      d3ToPng.default("#map svg", "map.jpg", {})
+        .then(res => {
+          console.log(res);
+        })
   }
 }
