@@ -10,6 +10,9 @@ import {MatIconModule} from '@angular/material/icon';
 import { BubblesComponent } from './bubbles/bubbles.component';
 import { MapComponent } from './map/map.component';
 import { LogoComponent } from './logo/logo.component';
+import {MatSelectModule} from '@angular/material/select';
+import { ReactiveFormsModule } from '@angular/forms';
+
 
 @NgModule({
   declarations: [
@@ -21,10 +24,12 @@ import { LogoComponent } from './logo/logo.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    ReactiveFormsModule,
     BrowserAnimationsModule,
     MatButtonModule,
     MatToolbarModule,
-    MatIconModule
+    MatIconModule,
+    MatSelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]

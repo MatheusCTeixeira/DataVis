@@ -1,0 +1,17 @@
+import json
+from shapely.geometry import shape, Point
+
+def main():
+    states = []
+    with open("data.json") as f:
+        brazil = json.load(f)
+        for state in brazil["features"]:
+            state_geometry = shape(state["geometry"])
+            states.append(state_geometry)
+
+    coords = json.load(open("coordinates.json"))
+    for week, users in coords.items():
+        pass
+
+if "__main__" == __name__:
+    main()

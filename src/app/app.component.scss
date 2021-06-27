@@ -28,7 +28,7 @@ div.body {
 }
 
 div.left, div.main, div.right {
-    width: 15%;
+    width: 25%;
     top: 0px;
 }
 
@@ -37,15 +37,15 @@ div.left {
 }
 
 div.main {
-    width: 70%;
+    width: 50%;
     height: 100%;
-    border-left: 1px solid rgb(75, 73, 73);
-    border-right: 1px solid rgb(75, 73, 73);
+    border-left: 1px solid rgb(200, 200, 200);
+    border-right: 1px solid rgb(200, 200, 200);
 
 
     section {
         h2 {
-            padding: 10px 40px;
+            padding: 10px 20px;
             font-size: 40px;
             color: rgb(70, 66, 66);
         }
@@ -56,6 +56,14 @@ div.main {
         }
         h2:hover:after {
             content:"#";
+        }
+
+        p {
+            text-align: justify;
+            line-height: 1.6;
+            font-size: 18px;
+            font-weight: 400;
+            padding: 5px 20px 10px;
         }
     }
 }
@@ -87,7 +95,10 @@ ul.topics {
     list-style-type: none;
 
     li {
-        font-size: 20px;
+        position: relative;
+        left: 50%;
+        font-size: 14px;
+        color: rgb(112, 101, 101);
         height: 40px;
     }
 
@@ -126,4 +137,9 @@ ul.topics {
        fill: #ffffff;
      }
 
+ }
+
+ a {
+     text-decoration: none;
+     color: inherit;
  }

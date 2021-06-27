@@ -1,5 +1,6 @@
 import { ClassGetter } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as d3 from "d3";
 import * as d3Geo from "d3-geo";
 import * as d3ToPng from 'd3-svg-to-png';
@@ -10,67 +11,81 @@ import * as d3ToPng from 'd3-svg-to-png';
   styleUrls: ['./map.component.scss']
 })
 export class MapComponent implements OnInit {
-  data = [1, 2, 3, 4];
+  svg = null;
+  weeks: any;
+  weeks_no: any[];
+  map: any;
+  week_selected = new FormControl(1);
 
   constructor() { }
 
   ngOnInit(): void {
-    const svg = d3.select("#map")
+    this.svg = d3.select("#map")
       .append("svg")
-        .attr("width", "800px")
-        .attr("height", "800px")
-        .attr("viewBox", "0 0 800 800")
+        .attr("width", "400px")
+        .attr("height", "400px")
+        .attr("viewBox", "0 0 400 400")
       .append("g");
 
 
+    d3.json("assets/summarized.json").then((weeks: Object) => {
+      this.weeks = weeks;
+      this.weeks_no = Object.keys(weeks);
+      weeks = weeks[0];
+        d3.json("assets/gadm36_BRA_1.geojson").then((data: any) => {
+          this.map = data;
+          this.selectWeek({first: true});
+          this.svg = d3.select("#map")
+          .select("svg")
+          .select("g");
+        });
+      });
 
-    d3.json("assets/gadm36_BRA_1.geojson")
-      .then((data: any) => {
+  }
 
-        let projection = d3Geo.geoEquirectangular()
-          .scale(300)
-          .center([-15.595833, -56.096944])
-          .fitExtent([[0, 0], [800, 800]], data);
-        let geoGenerator = d3Geo.geoPath().projection(projection);
-        svg.selectAll("path")
-        .data(data.features)
-        .join(
-          (enter: any) => enter.append("path")
-                            .attr("d", geoGenerator)
-                            .attr("stroke", "#000")
-                            .attr("stroke-width", 1)
-                            .attr("fill", "#DDD")
-        );
+  selectWeek(params?: {first?: boolean}) {
+    const week_no = this.week_selected.value;
+    console.log(week_no);
 
-        return projection;
-     })
-     .then(projection => {
-        d3.json("assets/coordinates.json")
-        .then((data: Object) => {
-          const weeks = new Array<Object>();
-          for (let i = 1; i <= 37; ++i)
-            weeks.push(data[`${i}`]);
+    if (!params?.first) {
+      this.svg = d3.select("#map")
+      .select("svg")
+      .select("g")
+    }
 
-          let coordinates = [];
-          weeks.forEach((week, i) => {
-            for (let user in week)
-              coordinates = coordinates.concat(week[user]);
-          });
+    const values = Object.values(this.weeks[week_no]) as number[];
+    const max_value = Math.max(...values)
+    const cuiaba: any = [-15.595833, -56.096944];
 
-          svg.selectAll("point")
-          .data(coordinates)
-          .join(
-            (enter) => enter.append("circle")
-                        .attr("cx", d => projection(d.coordinates)[0])
-                        .attr("cy", d => projection(d.coordinates)[1])
-                        .attr("r", 2)
-                        .attr("fill", "rgba(255, 0, 0, 0.3)")
+    let projection = d3Geo.geoEquirectangular()
+      .center(cuiaba)
+      .fitExtent([[0, 0], [400, 400]], this.map);
 
-          )
+    let geoGenerator = d3Geo.geoPath().projection(projection);
 
-        return projection;
-     })
-    });
+    this.svg
+      .selectAll("path")
+      .data(this.map.features)
+      .join(
+        (enter: any) => enter.append("path")
+                          .attr("d", geoGenerator)
+                          .attr("stroke", "#000")
+                          .attr("stroke-width", 1)
+                          .attr("fill", d => {
+                            const state = d.properties.NAME_1;
+                            const n = this.weeks[week_no][state];
+                            const color = 255 * (1 - n/max_value);
+                            return `rgb(255, ${color}, ${color})`;
+                          }),
+        (enter: any) => enter
+                          .attr("fill", d => {
+                            const state = d.properties.NAME_1;
+                            const n = this.weeks[week_no][state];
+                            const color = 255 * (1 - n/max_value);
+                            return `rgb(255, ${color}, ${color})`;
+                          }),
+
+      );
   }
 
   download() {
