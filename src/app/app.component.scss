@@ -60,7 +60,7 @@ div.main {
 
         p {
             text-align: justify;
-            line-height: 1.6;
+            line-height: 1.8;
             font-size: 18px;
             font-weight: 400;
             padding: 5px 20px 10px;
@@ -142,4 +142,13 @@ ul.topics {
  a {
      text-decoration: none;
      color: inherit;
+ }
+
+ #referencia {
+     .citation {
+         padding: 5px 30px;
+        span {
+            font-family: monospace;
+        }
+     }
  }

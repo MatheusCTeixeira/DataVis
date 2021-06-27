@@ -1,13 +1,36 @@
 <div id="map">
 </div>
 
-<div style="display: flex; justify-content: flex-start; flex-wrap: wrap; margin: 10px 20px; width: inherit;">
-    <mat-form-field appearance="fill">
-        <mat-label>Semana</mat-label>
-        <mat-select  [formControl]="week_selected"  (selectionChange)="selectWeek()">
-            <mat-option [value]="week" *ngFor="let week of weeks_no">
-                {{week}}
-            </mat-option>
-        </mat-select>
-    </mat-form-field>
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin: 10px 20px; width: inherit;">
+    <div appearance="fill">
+        <button
+            color="primary"
+            mat-raised-button
+            (click)="smallMultiples()">
+            Small-Multiples
+        </button>
+    </div>
+
+    <div>
+        <mat-form-field appearance="fill">
+            <mat-label>Semana</mat-label>
+            <mat-select
+                [formControl]="week_selected"
+                (selectionChange)="plotWeek()">
+                <mat-option [value]="week" *ngFor="let week of weeks_no">
+                    {{week}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div>
+        <button
+            color="primary"
+            mat-mini-fab
+            (click)="download()">
+            <mat-icon>file_download</mat-icon>
+
+        </button>
+    </div>
 </div>
