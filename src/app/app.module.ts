@@ -12,6 +12,7 @@ import { MapComponent } from './map/map.component';
 import { LogoComponent } from './logo/logo.component';
 import {MatSelectModule} from '@angular/material/select';
 import { ReactiveFormsModule } from '@angular/forms';
+import { BarplotComponent } from './barplot/barplot.component';
 
 
 @NgModule({
@@ -20,6 +21,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     BubblesComponent,
     MapComponent,
     LogoComponent,
+    BarplotComponent,
   ],
   imports: [
     BrowserModule,
