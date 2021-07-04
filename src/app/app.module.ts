@@ -13,6 +13,8 @@ import { LogoComponent } from './logo/logo.component';
 import {MatSelectModule} from '@angular/material/select';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BarplotComponent } from './barplot/barplot.component';
+import { LineplotComponent } from './lineplot/lineplot.component';
+import { RadarplotComponent } from './radarplot/radarplot.component';
 
 
 @NgModule({
@@ -22,6 +24,8 @@ import { BarplotComponent } from './barplot/barplot.component';
     MapComponent,
     LogoComponent,
     BarplotComponent,
+    LineplotComponent,
+    RadarplotComponent,
   ],
   imports: [
     BrowserModule,

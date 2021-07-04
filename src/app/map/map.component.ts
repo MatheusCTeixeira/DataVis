@@ -20,6 +20,7 @@ export class MapComponent implements OnInit {
   width = 800;
   viewBoxWidth = 800;
   viewBoxHeight = 800;
+  maxValue = 0;
 
   constructor() { }
 
@@ -35,6 +36,12 @@ export class MapComponent implements OnInit {
     d3.json("assets/summarized.json").then((weeks: Object) => {
       this.weeks = weeks;
       this.weeks_no = Object.keys(weeks);
+      for (const key of this.weeks_no) {
+        const maxV = d3.max(Object.values(this.weeks[key] as number[]));
+        console.log(maxV);
+        if (maxV > this.maxValue)
+        this.maxValue = maxV;
+      }
       weeks = weeks[0];
         d3.json("assets/gadm36_BRA_1.geojson").then((data: any) => {
           this.map = data;
@@ -78,33 +85,35 @@ export class MapComponent implements OnInit {
                             .attr("dominant-baseline", "middle")
                             .attr("text-anchor", "middle")
                             .attr("fill", "black")
-                            .html(d=> d.properties.HASC_1.split(".")[1]);
+                            .html(d=> {
+                              const week_no = this.week_selected.value;
+                              const state = d.properties.NAME_1;
+                              const sigla = d.properties.HASC_1.split(".")[1];
+                              const n = this.weeks[week_no][state];
+
+                              return `${sigla} - ${n}`;
+                            });
+
         },
         (update: any) => update
-                          .attr("fill", d => this.setColor(d)),
+                          .attr("fill", d => this.setColor(d))
 
       )
   }
 
   setColor(d: any) {
-    console.log(d);
+    if (!this.maxValue) return 0;
     const week_no = this.week_selected.value;
-
-    const values = Object.values(this.weeks[week_no]) as number[];
-    const max_value = Math.max(...values)
-
     const state = d.properties.NAME_1;
     const n = this.weeks[week_no][state];
-    const color = 255 * (1 - n/max_value);
+    const color = 255 * (1 - n/this.maxValue);
 
     return `rgb(255, ${color}, ${color})`;
   }
 
   plotSmallMultiples(first: boolean, params?: {i?: number, j?: number}) {
-    const week_no = this.week_selected.value;
-
     const [dx, dy] = [this.viewBoxWidth/6, this.viewBoxHeight/6];
-    const [x, y] = [params.i*dx, params.j*dy];
+    const [x, y] = [params.j*dx, params.i*dy];
 
     this.svg = d3.select("#map");
 
