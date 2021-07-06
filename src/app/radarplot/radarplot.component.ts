@@ -13,13 +13,10 @@ export class RadarplotComponent implements OnInit {
   header: string[] = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
   @Input()
-  data: number[][] = [
-    [5,16,8,10,12,13,8],
-    [2,18,2,11,6,9,0],
-    [14,20,4,7,6,11,10],
-    [8,9,2,11,7,12,3],
-    [5,6,7,11,8,3,5],
-  ]
+  data: number[][] = [];
+
+  median: number[] = [];
+  mean: number[] = [];
 
   @Input() width = 800;
   @Input() height = 800;
@@ -33,7 +30,35 @@ export class RadarplotComponent implements OnInit {
 
   constructor() { }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    d3.csv("assets/daily_tweets.csv")
+      .then(data => {
+        for (let week of data) {
+          week = week as any;
+          let week_days = [];
+
+          for (let day = 0; day < 7; ++day)
+            if (+week[+day])
+              week_days.push(+week[+day]);
+            else
+              week_days.push(NaN);
+
+          const mean = d3.mean(week_days);
+          const max = d3.max(week_days);
+
+          week_days.forEach(v => v = Number.isNaN(v) ? mean : v);
+
+          this.data.push(week_days.map(v => v/max));
+        }
+
+        this.median = d3.transpose(this.data).map((v: number[]) => d3.median(v));
+        this.mean = d3.transpose(this.data).map((v: number[]) => d3.mean(v));
+        console.log("mean", this.median);
+        this.draw();
+      });
+  }
+
+  draw(): void {
     const PI = 3.14159265359;
     const CX = this.margin.left + (this.width - this.margin.left - this.margin.right)/2;
     const CY = this.margin.top + (this.height - this.margin.top - this.margin.bottom)/2;
@@ -49,16 +74,16 @@ export class RadarplotComponent implements OnInit {
     svg
     .append("g")
     .selectAll("g")
-    .data(d3.range(this.data.length))
+    .data(d3.range(6))
     .join(
       enter => enter.append("g")
       .append("circle")
       .attr("fill", "none")
-      .attr("stroke", "rgba(0, 0, 0, 0.3)")
+      .attr("stroke", "rgba(0, 0, 0, 0.7)")
       .attr("stroke-width", 1)
       .attr("cx", CX)
       .attr("cy", CY)
-      .attr("r", (d, i) => i * RD/this.data.length));
+      .attr("r", (d, i) => i * RD/5));
 
     svg
     .append("g")
@@ -67,21 +92,22 @@ export class RadarplotComponent implements OnInit {
     .join(enter => {
       enter.append("g")
       .append("line")
-      .attr("fill", "none")
-      .attr("stroke", "rgba(0, 0, 0, 0.3)")
-      .attr("stroke-width", 1)
-      .attr("transform", `translate(${CX}, ${CY})`)
-      .attr("x1", 0)
-      .attr("y1", 0)
-      .attr("x2", (d, i) => RD * Math.cos(2* PI * i / this.data[0].length))
-      .attr("y2", (d, i) => RD * Math.sin(2* PI * i / this.data[0].length))
+        .attr("fill", "none")
+        .attr("stroke", "rgba(0, 0, 0, 0.3)")
+        .attr("stroke-width", 1)
+        .attr("transform", `translate(${CX}, ${CY})`)
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", (d, i) => RD * Math.sin(2* PI * i / this.data[0].length))
+        .attr("y2", (d, i) => -RD * Math.cos(2* PI * i / this.data[0].length));
 
-      enter.append("text")
-      .attr("fill", "black")
-      .attr("transform", (d, i) => `translate(${CX + RD * Math.cos(2* PI * i / this.data[0].length)}, ${CY + RD * Math.sin(2* PI * i / this.data[0].length)})`)
-      .html((d, i) => this.header[i])
+      return enter.append("text")
+          .attr("fill", "black")
+          .attr("dominant-baseline", "hanging")
+          .attr("text-anchor", "middle")
+          .attr("transform", (d, i) => `translate(${CX + 1.1 * RD * Math.sin(2* PI * i / 7)}, ${CY - 1.1 * RD * Math.cos(2* PI * i / 7)}) rotate(${360 * i / 7})`)
+        .html((d, i) => this.header[i])
 
-      return null;
     });
 
     svg
@@ -92,24 +118,28 @@ export class RadarplotComponent implements OnInit {
       enter
       .append("g")
       .attr("transform", `translate(${CX}, ${CY})`)
-      .datum(d => this.random(7))
+      .datum((d, i) => <any>d.map((v, i)=>[i, v]))
       .append("path")
       .attr("fill", "none")
-      .attr("stroke", "red")
+      .attr("stroke", "rgba(45, 45, 45, 0.2)")
+      .attr("stroke-width", 1)
+      .attr("d", d3.lineRadial().angle((d, i) => {
+        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)));
+
+    svg
+    .append("g")
+    .selectAll("g")
+    .data([this.mean, this.median] as number[][])
+    .join(enter =>
+      enter
+      .append("g")
+      .attr("transform", `translate(${CX}, ${CY})`)
+      .datum((d, i) => <any>d.map((v, i)=>[i, v]))
+      .append("path")
+      .attr("fill", "none")
+      .attr("stroke", "black")
       .attr("stroke-width", 2)
-      .attr("d", d3.lineRadial().angle((d, i) => 2 * PI * i/7).radius((d, i) => d[1]).curve(d3.curveCatmullRomClosed)));
-
-
-
-  }
-
-  random(n) {
-    let arr = [];
-    for (let i = 0; i < n; ++i)
-      arr.push([i, Math.random() * 40 + 200])
-
-    // arr.push(arr[0]);
-
-    return arr;
+      .attr("d", d3.lineRadial().angle((d, i) => {
+        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)));
   }
 }
