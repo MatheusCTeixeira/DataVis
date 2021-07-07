@@ -18,8 +18,8 @@ export class RadarplotComponent implements OnInit {
   median: number[] = [];
   mean: number[] = [];
 
-  @Input() width = 800;
-  @Input() height = 800;
+  @Input() width = 500;
+  @Input() height = 400;
 
   margin = {
     left: 30,
@@ -68,7 +68,6 @@ export class RadarplotComponent implements OnInit {
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
-        .attr("viewBox", "0 0 1000 1000")
       .append("g");
 
     svg

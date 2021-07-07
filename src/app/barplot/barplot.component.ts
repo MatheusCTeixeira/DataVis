@@ -47,7 +47,7 @@ constructor() { }
     const hAxis = d3.axisBottom(hScale).ticks(15);
 
     const vScale = d3.scaleLinear()
-        .domain([0, d3.max(data.map(v => 1.2 * (+v.f + +v.m + +v.unknown)))])
+        .domain([0, d3.max(data.map(v => 1.1 * (+v.f + +v.m + +v.unknown)))])
         .range([this.height - this.margin.bottom, this.margin.top]);
 
     const vAxis = d3.axisLeft(vScale);

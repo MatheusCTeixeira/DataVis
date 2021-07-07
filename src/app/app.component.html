@@ -26,15 +26,13 @@
         COVID-19
       </p>
       <div>
-      <app-lineplot></app-lineplot>
-      <app-lineplot></app-lineplot>
-      <app-radarplot></app-radarplot>
+
     </div>
     </section>
 
     <section id="dados">
       <h2>Dados</h2>
-      <app-barplot></app-barplot>
+
     </section>
 
     <section id="bots">
@@ -47,13 +45,56 @@
 
     <section id="caracterizacao">
       <h2>Caracterização</h2>
+      <h4>Comportamento dos usuários</h4>
       <p>
-        O gráfico a seguir apresenta os estados onde foram identificados
-        as maiores quantidades de tweets do país. É interessante notar que o
-        estado de São Paulo é o que apresenta a maior quantidade em todas as
-        semanas analisadas. Outra ponto interessante é um pico na 17ª semana
-        no estado do Amazonas, possívelmente devido a decisão do governo de
-        adiar o retorno às aulas<sup>[1]</sup>
+        Nesta seção podemos observar o comportamento de todos os usuários
+        ao longo do período estudado. Logo em seguida, podemos observar o comportamento
+        de cada grupo de usuário. Quando análisado em valores absolutos, com execeção
+        de um pico nas primeiras semanas, os valores de ambas as polaridades (favor e contra)
+        são bem semelhantes. Entretanto, quando a quantidade de tweets é normalizada
+        é possível verificar a proximidade entre a razão <code> # tweets / # usuários</code>
+      </p>
+      <app-lineplot [normalized]="false" innerId="fig_1"></app-lineplot>
+      <app-lineplot [normalized]="true" innerId="fig_2"></app-lineplot>
+
+      <h4>Padrões temporal de comportamento</h4>
+      <p>
+        Nesta seção estudamos sobre os hábitos dos usuários. O Radar plot abaixo
+        apresenta a quantidade de tweets de todos os usuários ao longo das 36 semanas
+        analisadas. As linhas mais claras representam os valores reais (a quantidade
+        absoluta de tweets) e as linhas mais escuras indicam tendências centrais, isto é,
+        a média e a mediana da quantidade de tweets. É importante ressaltar que
+        alguns pré-processamentos foram feitos, isto é, os valores de cada semana
+        foram normalizados pelo valor máximo daquela mesma semana pois a quantidade
+        de tweets decaí ao longo das semanas (gera uma espiral). É interessante observar
+        que os usuários publicam mais tweets em dias de semana do que no final de semana,
+        o que pode ser observado comparados com os grids de referência do gráfico.
+      </p>
+      <app-radarplot></app-radarplot>
+
+      <h4>Perfis dos usuários</h4>
+      <p>
+        No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo
+        ao longo das semanas. A inferência do sexo foi feita a partir do
+        nome do usuário com base no artigo de Miranda Filho, R. et al.<sup>[2]</sup>
+        Os resultados indicam que no geral a quantidade pessoas do sexo feminino é
+        levemente superior ao masculino. Em todos as semanas a quantidade de pessoas
+        que não foi pessível determinar o sexo foi superior a ambos os sexos, logo
+        não é possível afirmar qual dos dois sexos é o que mais utilizou a plataforma.
+      </p>
+      <app-barplot></app-barplot>
+
+      <h4>Localização geográfica dos usuários</h4>
+      <p>
+        Os gráficos abaixo indicam a quantidade de tweets de cada estado do país.
+        É possível notar que com o passar das semanas a quantidade de tweets cai
+        drásticamente. Em praticamente todas as semanas o estado de São Paulo
+        foi o que mais publicou tweets. Entretanto uma questão a ser considerada
+        é também esse é o estado mais populoso do país, logo esse valor absoluto
+        pode perde o impacto. Para ajudar na visualização, todos as semanas são
+        plotadas juntas onde as semanas avançam horizontalmente e depois verticalmente,
+        ou seja, o mapa <code>(i, j)</code> representa a semana X e o mapa
+        <code>(i, j+1)</code> representa a semana X + 1.
       </p>
       <app-map></app-map>
     </section>
@@ -68,6 +109,10 @@
         <a href="https://g1.globo.com/am/amazonas/noticia/2020/08/21/governo-adia-retorno-das-aulas-do-ensino-fundamental-em-manaus.ghtml">
           https://g1.globo.com/am/amazonas/noticia/2020/08/21/governo-adia-retorno-das-aulas-do-ensino-fundamental-em-manaus.ghtml
         </a>
+      </div>
+      <div class="citation">
+        <span>[2]</span>
+        Miranda Filho, R., Carvalho, A. I., and Pappa, G. L. Inferência de sexo e idade de usuários no twitter. In Anais do III Brazilian Workshop on Social Network Analysis and Mining. SBC, pp. 200-211, 2014.
       </div>
     </section>
   </div>
