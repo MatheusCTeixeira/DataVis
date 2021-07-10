@@ -19,6 +19,12 @@
   </div>
 
   <div class="main">
+    <div class="credit">
+      Gráficos desenvolvidos por
+      <a href="https://github.com/MatheusCTeixeira">@MatheusCTeixeira</a>
+      e com contribuições de
+      <a href="https://github.com/pedrobrum">@pedrobrum</a>.
+    </div>
     <section id="introducao">
       <h2>Introdução</h2>
       <p>
@@ -71,7 +77,15 @@
         o que pode ser observado comparados com os grids de referência do gráfico.
       </p>
       <app-radarplot></app-radarplot>
-
+      <app-boxplot
+        innerId="bar_1"
+        [width]="600"
+        [height]="400"
+        [rangeX]="[0, 100]"
+        [rangeY]="[8, 20]"
+        [boxWidth]="10"
+        [margin]="{top: 20, bottom: 20, left: 30, right: 30}">
+      </app-boxplot>
       <h4>Perfis dos usuários</h4>
       <p>
         No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo
@@ -82,7 +96,8 @@
         que não foi pessível determinar o sexo foi superior a ambos os sexos, logo
         não é possível afirmar qual dos dois sexos é o que mais utilizou a plataforma.
       </p>
-      <app-barplot></app-barplot>
+      <app-barplot>
+      </app-barplot>
 
       <h4>Localização geográfica dos usuários</h4>
       <p>

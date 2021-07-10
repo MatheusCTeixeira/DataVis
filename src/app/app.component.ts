@@ -15,7 +15,6 @@ export class AppComponent {
   }
 
   ngOnInit() {
-    console.log(d3.ticks(1, 10, 10));
   }
 
 

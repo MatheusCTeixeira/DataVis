@@ -53,7 +53,6 @@ export class RadarplotComponent implements OnInit {
 
         this.median = d3.transpose(this.data).map((v: number[]) => d3.median(v));
         this.mean = d3.transpose(this.data).map((v: number[]) => d3.mean(v));
-        console.log("mean", this.median);
         this.draw();
       });
   }

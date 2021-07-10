@@ -87,7 +87,7 @@ export class LineplotComponent implements OnInit {
       .join("path")
         .attr("fill", "none")
         .attr("stroke", d => color[d[0]])
-      .datum((d: any) => {console.log("any", d[1]); return d[1];})
+      .datum((d: any) => d[1])
       .attr("d", d3.line().x(d=>scaleX(d[0])+this.margin.right).y(d=>scaleY(d[1])+this.margin.bottom).curve(d3.curveBasisOpen));
 
   }

@@ -38,7 +38,6 @@ export class MapComponent implements OnInit {
       this.weeks_no = Object.keys(weeks);
       for (const key of this.weeks_no) {
         const maxV = d3.max(Object.values(this.weeks[key] as number[]));
-        console.log(maxV);
         if (maxV > this.maxValue)
         this.maxValue = maxV;
       }

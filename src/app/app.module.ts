@@ -15,6 +15,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BarplotComponent } from './barplot/barplot.component';
 import { LineplotComponent } from './lineplot/lineplot.component';
 import { RadarplotComponent } from './radarplot/radarplot.component';
+import { BoxplotComponent } from './boxplot/boxplot.component';
+import { DecimalPipe } from '@angular/common';
 
 
 @NgModule({
@@ -26,6 +28,7 @@ import { RadarplotComponent } from './radarplot/radarplot.component';
     BarplotComponent,
     LineplotComponent,
     RadarplotComponent,
+    BoxplotComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,7 +40,7 @@ import { RadarplotComponent } from './radarplot/radarplot.component';
     MatIconModule,
     MatSelectModule
   ],
-  providers: [],
+  providers: [DecimalPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule {

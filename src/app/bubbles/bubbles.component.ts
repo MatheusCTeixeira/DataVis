@@ -57,7 +57,6 @@ export class BubblesComponent implements OnInit {
   draw() {
       this.svg.selectAll("circle")
       .data(this.data, function (d) {
-        console.log(d.id);
         return `${d.id}`;})
       .join(
         (enter: any) => enter.append("circle")
