@@ -16,8 +16,12 @@ import { BarplotComponent } from './barplot/barplot.component';
 import { LineplotComponent } from './lineplot/lineplot.component';
 import { RadarplotComponent } from './radarplot/radarplot.component';
 import { BoxplotComponent } from './boxplot/boxplot.component';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, registerLocaleData } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
+import { DEFAULT_CURRENCY_CODE} from '@angular/core';
+import localePt from '@angular/common/locales/pt';
 
+registerLocaleData(localePt, 'pt');
 
 @NgModule({
   declarations: [
@@ -40,7 +44,17 @@ import { DecimalPipe } from '@angular/common';
     MatIconModule,
     MatSelectModule
   ],
-  providers: [DecimalPipe],
+  providers: [DecimalPipe, {
+    provide: LOCALE_ID,
+    useValue: 'pt'
+},
+
+/* if you don't provide the currency symbol in the pipe,
+this is going to be the default symbol (R$) ... */
+{
+    provide:  DEFAULT_CURRENCY_CODE,
+    useValue: 'BRL'
+},],
   bootstrap: [AppComponent]
 })
 export class AppModule {

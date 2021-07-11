@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
-import * as d3Axis from "d3-axis";
-import * as d3Scale from "d3-scale";
-import * as d3Transition from "d3-transition";
+import { BarData, BarSeries } from '../types/bardata';
+import { Margin } from '../types/margin';
+import { Style } from '../types/style';
 
 interface IData {
   week_no: number;
@@ -16,92 +17,184 @@ interface IData {
   templateUrl: './barplot.component.html',
   styleUrls: ['./barplot.component.scss']
 })
-export class BarplotComponent implements OnInit {
-constructor() { }
+export class BarplotComponent implements OnInit, AfterViewInit {
+  @Input()
+  innerId: string;
 
-  margin = ({top: 30, right: 10, bottom: 30, left: 60});
-  height = 400
-  width = 900
+  @Input()
+  margin: Margin;
+
+  @Input()
+  height: number;
+
+  @Input()
+  width: number;
+
+  @Input()
+  data_b: BarSeries[];
+
+  @Input()
+  data: BarSeries[];
+
+  @Input()
+  stacked: boolean;
+
+  @Input()
+  animate: boolean;
+
+  @Input()
+  rangeX: [number, number];
+
+  @Input()
+  rangeY: [number, number];
+
+  @Input()
+  axisX: string;
+
+  @Input()
+  axisY: string;
+
+  stackValues: number[];
+
+  once = true;
+
+  constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit(): void {
-    d3.csv("assets/sex_weeks.csv")
-    .then((data: any) => this.plot(data as IData[]));
+
   }
 
-  plot(data: IData[]) {
-    const marginX = this.margin.left + this.margin.right;
-    const marginY = this.margin.top + this.margin.bottom;
+  ngAfterViewInit() {
+    this.plot();
+  }
 
-
-    const svg = d3.select("#bar")
+  plot() {
+    const svg = d3.select(`#${this.innerId}`)
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
       .append("g");
 
-
     const hScale = d3.scaleLinear()
-                    .domain([0, 37])
+                    .domain(this.rangeX)
                     .range([this.margin.left, this.width - this.margin.right]);
 
     const hAxis = d3.axisBottom(hScale).ticks(15);
 
+    svg.call(sel => this.addLegend(sel));
+
+    svg
+    .append("g")
+      .attr("transform", `translate(0, ${this.height - this.margin.bottom})`)
+      .call(hAxis);
+
     const vScale = d3.scaleLinear()
-        .domain([0, d3.max(data.map(v => 1.1 * (+v.f + +v.m + +v.unknown)))])
+        .domain(this.rangeY)
         .range([this.height - this.margin.bottom, this.margin.top]);
 
-    const vAxis = d3.axisLeft(vScale);
-
-    svg
-      .append("g")
-        .attr("transform", `translate(0, ${this.height - this.margin.bottom})`)
-        .call(hAxis);
+    const vAxis = d3.axisLeft(vScale).tickFormat((v: number) => `${Math.round(v/1000000)}M`);
 
     svg.append("g")
-      .attr("transform", `translate(${this.margin.left}, ${0})`).call(vAxis);
+      .attr("transform", `translate(${this.margin.left}, 0)`).call(vAxis);
 
-    svg
-      .append("g")
-      .selectAll("rect")
-      .data(data)
-      .join(
-        enter => {
-          const t = d3.transition().duration(500).ease(d3.easeSinInOut);
+    this.data.forEach((row, i) => {
+      console.log(row);
+      if (this.stacked)
+        if (this.stackValues != null)
+          this.stackValues = this.data[i-1].series.map((v, i) => v.y + this.stackValues[i]);
+        else
+          this.stackValues = row.series.map(v => 0);
 
-          enter.append("rect")
-          .attr("fill", "#0000ff")
-          .attr("x", d => hScale(d.week_no)- 8)
-          .attr("y", d => vScale(d.m))
-          .attr("width", 16)
-          .attr("height", 0)
-          .attr("fill", "#fff")
-          .transition(t)
-            .attr("fill", "#0000ff")
-            .attr("height", d => vScale(0) - vScale(d.m));
-
-          enter.append("rect")
-          .attr("x", d => hScale(d.week_no) - 8)
-          .attr("y", d => vScale(d.m) - (vScale(0) - vScale(d.f)))
-          .attr("width", 16)
-          .attr("height", 0)
-          .attr("fill", "#fff")
-          .transition(t)
-            .attr("fill", "#ff0000")
-            .attr("height", d => vScale(0) - vScale(d.f));
-
-          enter.append("rect")
-          .attr("fill", "#a9a9bd")
-          .attr("x", d => hScale(d.week_no) - 8)
-          .attr("y", d => vScale(+d.f + +d.m) - (vScale(0) - vScale(d.unknown)))
-          .attr("width", 16)
-          .attr("height", 0)
-          .attr("fill", "#fff")
-          .transition(t)
-            .attr("fill", "#a9a9bd")
-            .attr("height", d => vScale(0) - vScale(d.unknown));
-
-          return null;
-        });
+      svg
+        .append("g")
+        .selectAll("rect")
+        .data(row.series)
+        .join(
+          enter => {
+            const t = d3.transition().duration(500).delay(500).ease(d3.easeSinInOut);
+            const rect = enter
+                .append("rect")
+                  .call(enter => this.tooltip(enter))
+                  .attr("fill", row.style.fillColor)
+                .call(sel => this.drawBar(sel, hScale, vScale))
+            return rect;
+          });
+    })
   }
 
+  drawBar(enter, x: d3.ScaleLinear<number, number, never>, y: d3.ScaleLinear<number, number, never>) {
+    if (this.stacked) {
+      enter
+      .attr("x", (d: any) => x(d.x))
+      .attr("y", (d: any, i) => y(d.y + this.stackValues[i]))
+      .attr("width", 0.8 * (x(1) - x(0)))
+      .attr("height", d => y(0) - y(d.y));
+    }
+  }
+
+  tooltipHtml(i) {
+    let message = `
+    <div style="display: flex; justify-content: flex-start; flex-flow: column;">
+      <div style="align-self: center;">ESTATÍSTICAS</div>
+      <div>Semana: ${i}</div>`
+
+    const total = this.data.map(v => v.series[i-1].y).reduce((a, b) => a + b);
+    for (let bar of this.data.reverse()) {
+      const value = bar.series[i-1].y;
+      const pp = 100 * value / total;
+      const formatedValue = this.decimalPipe.transform(value, "1.0-0", "pt");
+      const formatedPP = this.decimalPipe.transform(pp, "1.2-2", "pt");
+     message += `<div>${bar.label}: ${formatedValue} (${formatedPP}%)</div>`;
+    }
+
+    message += "</div>"
+    return message;
+  }
+
+  tooltip(selection) {
+    const tooltip = d3.select("#tooltip");
+    selection
+       .on("mouseover", (e, data) => {
+          const t = d3.transition().duration(400).ease(d3.easeLinear);
+          tooltip
+          .html(this.tooltipHtml(data.x))
+          .style("visibility", "visible")
+          .style("opacity", 0)
+          .transition(t)
+          .style("opacity", 1)
+        })
+        .on("mousemove", e => {
+          tooltip
+            .style("visibility", "visible")
+            .style("left", e.pageX + 20 + "px")
+            .style("top", e.pageY + "px");
+        })
+        .on("mouseout", () => {
+          const t = d3.transition().duration(400).ease(d3.easeLinear)
+          tooltip
+          .style("opacity", 1)
+          .transition(t)
+          .style("opacity", 0)
+          .style("visibility", "hidden");
+        });
+
+    return selection;
+  }
+
+  addLegend(selection) {
+    selection
+      .append("g")
+      .append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(${this.width/2}, ${this.height})`)
+        .html(this.axisX);
+
+    selection
+      .append("g")
+      .append("text")
+        .attr("text-anchor", "middle")
+        .attr("transform", `translate(15, ${this.height/2}) rotate(270)`)
+        .html(this.axisY);
+
+  }
 }
