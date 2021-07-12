@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
 import * as d3Scale from "d3-scale";
 import * as d3Axis from "d3-axis";
+import { DecimalPipe } from '@angular/common';
 @Component({
   selector: 'app-lineplot',
   templateUrl: './lineplot.component.html',
@@ -10,7 +11,7 @@ import * as d3Axis from "d3-axis";
 export class LineplotComponent implements OnInit {
   height = 300;
   width = 450;
-  margin = {bottom: 30, top: 30, left: 30, right: 30};
+  margin = {bottom: 30, top: 30, left: 40, right: 30};
   maxValue = 0;
 
   @Input()
@@ -21,7 +22,7 @@ export class LineplotComponent implements OnInit {
 
   data_b =  new Map<string, [number, number][]>();
 
-  constructor() { }
+  constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit() {
     d3.csv("assets/tweets.csv")
@@ -55,7 +56,7 @@ export class LineplotComponent implements OnInit {
       .domain([1, 36])
       .range([0, this.width - this.margin.left - this.margin.right]);
 
-    const axisX = d3Axis.axisBottom(scaleX);
+    const axisX = d3.axisBottom(scaleX);
 
     svg.append("g")
       .attr("transform", `translate(${this.margin.left}, ${this.height-this.margin.bottom})`)
@@ -65,7 +66,7 @@ export class LineplotComponent implements OnInit {
       .domain([0, this.maxValue])
       .range([this.height - this.margin.bottom - this.margin.top, 0]);
 
-    const axisY = d3Axis.axisLeft(scaleY);
+    const axisY = d3.axisLeft(scaleY).tickFormat((v: number) => `${Math.trunc(v/1000)}k`);
 
     svg.append("g")
       .attr("transform", `translate(${this.margin.left}, ${this.margin.bottom})`)
@@ -80,15 +81,17 @@ export class LineplotComponent implements OnInit {
       "bot_norm": "gray"
     };
 
+    const f = d3.line().x(d=>scaleX(d[0])+this.margin.right).y(d=>scaleY(d[1])+this.margin.bottom).curve(d3.curveBasisOpen);
+
     svg
     .append("g")
       .selectAll("path")
-      .data(this.data_b)
+      .data(Array.from(this.data_b.entries()))
       .join("path")
         .attr("fill", "none")
         .attr("stroke", d => color[d[0]])
       .datum((d: any) => d[1])
-      .attr("d", d3.line().x(d=>scaleX(d[0])+this.margin.right).y(d=>scaleY(d[1])+this.margin.bottom).curve(d3.curveBasisOpen));
+      .attr("d", f);
 
   }
 
