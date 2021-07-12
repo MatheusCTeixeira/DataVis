@@ -1,6 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-import * as d3Axis from "d3-axis";
-import * as d3Scale from "d3-scale";
 import * as d3 from "d3";
 
 @Component({
@@ -122,22 +120,39 @@ export class RadarplotComponent implements OnInit {
       .attr("stroke", "rgba(45, 45, 45, 0.2)")
       .attr("stroke-width", 1)
       .attr("d", d3.lineRadial().angle((d, i) => {
-        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)));
+        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)))
 
-    svg
-    .append("g")
-    .selectAll("g")
-    .data([this.mean, this.median] as number[][])
-    .join(enter =>
-      enter
+      const factory = d3.lineRadial().angle((d, i) => 2 * PI * i / 7).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)
+        // const helperLine = enter
+
+    const statistics = [this.mean, this.median];
+    statistics.forEach(statistic => {
+      const helperLine = svg
       .append("g")
       .attr("transform", `translate(${CX}, ${CY})`)
-      .datum((d, i) => <any>d.map((v, i)=>[i, v]))
+      .datum(statistic.map((v, i) => <[number, number]>[i, v]))
       .append("path")
-      .attr("fill", "none")
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 3)
+        .attr("d", factory);
+
+        helperLine.on("mouseover", e => this.highlight(helperLine, "on"));
+        helperLine.on("mouseout", e => this.highlight(helperLine, "off"));
+    })
+  }
+
+
+
+  highlight(selection, type) {
+    const t = d3.transition().duration(300);
+    if (type == "on") {
+      selection
+        .attr("stroke", "yellow");
+
+    } else if (type == "off") {
+      selection
       .attr("stroke", "black")
-      .attr("stroke-width", 2)
-      .attr("d", d3.lineRadial().angle((d, i) => {
-        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)));
+    }
   }
 }
