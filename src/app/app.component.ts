@@ -1,6 +1,4 @@
-import { ClassGetter } from '@angular/compiler/src/output/output_ast';
 import { Component } from '@angular/core';
-import { By } from '@angular/platform-browser';
 import * as d3 from "d3";
 import { BarData, BarSeries } from './types/bardata';
 

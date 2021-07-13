@@ -156,13 +156,14 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
 
   plotBox = function (selection, x: ScaleLinear<number, number, never>, y: ScaleLinear<number, number, never>, style) {
     const evaluate = (data: [number, number[]]) => {
+      const values = data[1].sort();
       return {
         x: data[0],
-        max: d3.max(data[1]),
-        q3: d3.quantile(data[1], 0.75),
-        median: d3.median(data[1]),
-        q1: d3.quantile(data[1], 0.25),
-        min: d3.min(data[1])
+        max: d3.max(values),
+        q3: d3.quantile(values, 0.75),
+        median: d3.median(values),
+        q1: d3.quantile(values, 0.25),
+        min: d3.min(values)
       }
     }
     const g = selection.datum(d => evaluate(d));
@@ -179,7 +180,7 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
       .attr("x", d => x(d.x) - this.mBW)
       .attr("y", d => y(d.q3))
       .attr("width", this.boxWidth)
-      .attr("height", d => y(d.q1) - y(d.q3) )
+      .attr("height", d => Math.abs(y(d.q1) - y(d.q3)))
       .attr("fill", "white")
       .attr("stroke", style.boxColor)
       .call(sel => this.tooltip(sel));
@@ -215,6 +216,7 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
     selection
        .on("mouseover", (e, data) => {
           const t = d3.transition().duration(400).ease(d3.easeLinear);
+
           tooltip
           .html(this.tooltipHtml(data.max, data.min, data.q1, data.median, data.q3))
           .style("visibility", "visible")
