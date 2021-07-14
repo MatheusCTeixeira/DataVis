@@ -43,6 +43,9 @@
 
     <section id="bots">
       <h2>Bots</h2>
+      <div style="display: flex; justify-content: center;">
+        <img src="assets/heatmap.png" alt="heatmap" style="width: 75%">
+      </div>
     </section>
 
     <section id="polarizacao">
@@ -86,19 +89,18 @@
         [boxWidth]="10"
         [margin]="{top: 20, bottom: 20, left: 30, right: 30}">
       </app-boxplot>
+      <h4>Perfis dos usuários</h4>
+      <p>
+        No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo
+        ao longo das semanas. A inferência do sexo foi feita a partir do
+        nome do usuário com base no artigo de Miranda Filho, R. et al.<sup>[2]</sup>
+        Os resultados indicam que no geral a quantidade pessoas do sexo feminino é
+        levemente superior ao masculino. Em todos as semanas a quantidade de pessoas
+        que não foi pessível determinar o sexo foi superior a ambos os sexos, logo
+        não é possível afirmar qual dos dois sexos é o que mais utilizou a plataforma.
+      </p>
       <ng-container *ngIf="sexWeekLoaded">
-        <h4>Perfis dos usuários</h4>
-        <p>
-          No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo
-          ao longo das semanas. A inferência do sexo foi feita a partir do
-          nome do usuário com base no artigo de Miranda Filho, R. et al.<sup>[2]</sup>
-          Os resultados indicam que no geral a quantidade pessoas do sexo feminino é
-          levemente superior ao masculino. Em todos as semanas a quantidade de pessoas
-          que não foi pessível determinar o sexo foi superior a ambos os sexos, logo
-          não é possível afirmar qual dos dois sexos é o que mais utilizou a plataforma.
-        </p>
-        <app-barplot
-          *ngIf="sexWeekLoaded"
+      <app-barplot
           innerId="barplotSex"
           [margin]="{top: 30, right: 10, bottom: 30, left: 45}"
           [width]="900"
@@ -125,8 +127,19 @@
         ou seja, o mapa <code>(i, j)</code> representa a semana X e o mapa
         <code>(i, j+1)</code> representa a semana X + 1.
       </p>
-      <app-map></app-map>
+      <ng-container *ngIf="coordsAndLocsLoaded == true">
+        <app-map
+          [tweetCoords]="tweetsCoords"
+          [userLocations]="userLocs">
+        </app-map>
+      </ng-container>
+
+      <h4>Análise de Tópicos</h4>
+      <div style="display: flex; justify-content: center;">
+        <img src="assets/termide.png" alt="termide" style="width: 75%">
+      </div>
     </section>
+
 
     <section id="conclusao">
       <h2>Conclusão</h2>

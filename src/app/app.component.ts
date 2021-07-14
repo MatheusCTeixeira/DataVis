@@ -14,12 +14,17 @@ export class AppComponent {
             new BarSeries("Fem.").addStyle({fillColor: "red"}),
             new BarSeries("Desc.").addStyle({fillColor: "lightgray"})];
 
+  tweetsCoords = null;
+  userLocs = null;
+  coordsAndLocsLoaded = false;
+
   constructor() {
 
   }
 
   ngOnInit() {
     this.loadSexWeek();
+    this.loadCoordsAndLocations();
   }
 
   loadSexWeek() {
@@ -32,8 +37,14 @@ export class AppComponent {
         this.sexWeek[2].series.push({x: +row.week_no, y: +row.unknown});
       }
 
-      setInterval(() => this.sexWeekLoaded = true, 500);
+      setTimeout(() => this.sexWeekLoaded = true, 500);
     });
+  }
+
+  loadCoordsAndLocations() {
+    d3.csv("assets/tweets_coords.csv").then(coords => this.tweetsCoords = coords);
+    d3.csv("assets/tweets_locs.csv").then(locs => this.userLocs = locs);
+    setTimeout(()=> this.coordsAndLocsLoaded = true, 500);
   }
 
 
