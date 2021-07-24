@@ -21,6 +21,7 @@ import { LOCALE_ID } from '@angular/core';
 import { DEFAULT_CURRENCY_CODE} from '@angular/core';
 import localePt from '@angular/common/locales/pt';
 import { HeatmapComponent } from './heatmap/heatmap.component';
+import { TermiteVisComponent } from './termite-vis/termite-vis.component';
 
 registerLocaleData(localePt, 'pt');
 
@@ -35,6 +36,7 @@ registerLocaleData(localePt, 'pt');
     RadarplotComponent,
     BoxplotComponent,
     HeatmapComponent,
+    TermiteVisComponent,
   ],
   imports: [
     BrowserModule,
