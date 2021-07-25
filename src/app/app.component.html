@@ -61,9 +61,10 @@
         são bem semelhantes. Entretanto, quando a quantidade de tweets é normalizada
         é possível verificar a proximidade entre a razão <code> # tweets / # usuários</code>
       </p>
+      <div style="display:flex; justify-content: space-around;">
       <app-lineplot [normalized]="false" innerId="fig_1"></app-lineplot>
       <app-lineplot [normalized]="true" innerId="fig_2"></app-lineplot>
-
+      </div>
       <h4>Padrões temporal de comportamento</h4>
       <p>
         Nesta seção estudamos sobre os hábitos dos usuários. O Radar plot abaixo
@@ -77,16 +78,23 @@
         que os usuários publicam mais tweets em dias de semana do que no final de semana,
         o que pode ser observado comparados com os grids de referência do gráfico.
       </p>
-      <app-radarplot></app-radarplot>
-      <app-boxplot
-        innerId="bar_1"
-        [width]="600"
-        [height]="400"
-        [rangeX]="[0, 100]"
-        [rangeY]="[8, 20]"
-        [boxWidth]="10"
-        [margin]="{top: 20, bottom: 20, left: 30, right: 30}">
-      </app-boxplot>
+      <div style="display:flex; justify-content: space-around;">
+        <app-radarplot
+          [width]="400"
+          [height]="300"
+          >
+        </app-radarplot>
+        <app-boxplot
+          innerId="bar_1"
+          [width]="400"
+          [height]="300"
+          [rangeX]="[0, 100]"
+          [rangeY]="[8, 20]"
+          [boxWidth]="10"
+          [margin]="{top: 20, bottom: 20, left: 30, right: 30}">
+        </app-boxplot>
+      </div>
+
       <h4>Perfis dos usuários</h4>
       <p>
         No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo

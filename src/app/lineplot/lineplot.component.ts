@@ -11,6 +11,7 @@ import { DecimalPipe } from '@angular/common';
 export class LineplotComponent implements OnInit {
   height = 300;
   width = 450;
+
   margin = {bottom: 30, top: 30, left: 40, right: 30};
   maxValue = 0;
 
@@ -52,25 +53,27 @@ export class LineplotComponent implements OnInit {
         .attr("height", this.height)
       .append("g");
 
-    const scaleX = d3Scale.scaleLinear()
+    const hScale = d3Scale.scaleLinear()
       .domain([1, 36])
-      .range([0, this.width - this.margin.left - this.margin.right]);
+      .range([this.margin.left, this.width]);
 
-    const axisX = d3.axisBottom(scaleX);
+    const axisX = d3.axisBottom(hScale);
 
     svg.append("g")
-      .attr("transform", `translate(${this.margin.left}, ${this.height-this.margin.bottom})`)
+      .attr("transform", `translate(0, ${this.height-this.margin.bottom})`)
       .call(axisX);
 
-    const scaleY = d3Scale.scaleLinear()
+    const vScale = d3Scale.scaleLinear()
       .domain([0, this.maxValue])
-      .range([this.height - this.margin.bottom - this.margin.top, 0]);
+      .range([this.height - this.margin.top, this.margin.bottom]);
 
-    const axisY = d3.axisLeft(scaleY).tickFormat((v: number) => `${Math.trunc(v/1000)}k`);
+    const axisY = d3.axisLeft(vScale)
+      .tickFormat((v: number) => `${this.normalized ? v : Math.round(v/10000)/100}`);
 
     svg.append("g")
-      .attr("transform", `translate(${this.margin.left}, ${this.margin.bottom})`)
+      .attr("transform", `translate(${this.margin.left}, 0)`)
       .call(axisY);
+
 
     const color = {
       "con": "red",
@@ -81,7 +84,10 @@ export class LineplotComponent implements OnInit {
       "bot_norm": "gray"
     };
 
-    const f = d3.line().x(d=>scaleX(d[0])+this.margin.right).y(d=>scaleY(d[1])+this.margin.bottom).curve(d3.curveBasisOpen);
+    const f = d3.line()
+      .x(d=>hScale(d[0]))
+      .y(d=>vScale(d[1]))
+      .curve(d3.curveBasisOpen);
 
     svg
     .append("g")
@@ -89,9 +95,26 @@ export class LineplotComponent implements OnInit {
       .data(Array.from(this.data_b.entries()))
       .join("path")
         .attr("fill", "none")
+        .attr("stroke-width", 4)
         .attr("stroke", d => color[d[0]])
       .datum((d: any) => d[1])
       .attr("d", f);
+
+    const line = svg.append("line").attr("class", "guide");
+    svg
+    .on("click", (event) => {
+      this.drawGuide(line, event.offsetX, vScale, hScale);
+    });
+  }
+
+  drawGuide(selection, x, vScale, hScale) {
+    selection
+      .attr("x1", x)
+      .attr("y1", vScale(0))
+      .attr("x2", x)
+      .attr("y2", hScale(15))
+      .attr("stroke", "black")
+      .attr("stroke-width", 1)
 
   }
 

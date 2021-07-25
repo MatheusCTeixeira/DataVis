@@ -24,7 +24,7 @@ export class TermiteVisComponent implements OnInit {
       .append("g");
 
     const vDomain = this.genDomain(30);
-    const hDomain = this.genDomain(40);
+    const hDomain = this.genDomain(20);
     const [vScale, hScale] = this.drawAxes(svg, vDomain, hDomain);
 
     this.drawGrid(svg, vDomain, hDomain, vScale, hScale);
