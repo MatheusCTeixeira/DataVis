@@ -16,6 +16,7 @@ export class AppComponent {
 
   tweetsCoords = null;
   userLocs = null;
+  bots = null;
   coordsAndLocsLoaded = false;
 
   constructor() {
@@ -25,6 +26,7 @@ export class AppComponent {
   ngOnInit() {
     this.loadSexWeek();
     this.loadCoordsAndLocations();
+    this.loadBotsHeatmap();
   }
 
   loadSexWeek() {
@@ -45,6 +47,10 @@ export class AppComponent {
     d3.csv("assets/tweets_coords.csv").then(coords => this.tweetsCoords = coords);
     d3.csv("assets/tweets_locs.csv").then(locs => this.userLocs = locs);
     setTimeout(()=> this.coordsAndLocsLoaded = true, 500);
+  }
+
+  loadBotsHeatmap() {
+    d3.csv("assets/bots_heatmap.csv").then(bots => this.bots = bots);
   }
 
 
