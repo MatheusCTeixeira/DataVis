@@ -9,46 +9,13 @@ import { DecimalPipe } from "@angular/common";
   templateUrl: './boxplot.component.html',
   styleUrls: ['./boxplot.component.scss']
 })
-export class BoxplotComponent implements OnInit, AfterViewInit {
+export class BoxplotComponent implements OnInit {
 
   @Input()
   innerId: string;
 
-  // @Input()
-  // data: {label: string, data: [number, number[]][]}[];
-
-  mock: {label: string, style: {boxColor?: any},data: [number, number[]][]}[] = [
-    {
-      label: "car",
-      style: {
-        boxColor: "red",
-      },
-      data: [[10, this.rand(7, 17, 2, 50)],
-             [20, this.rand(7, 17, 2, 50)],
-             [30, this.rand(7, 17, 2, 50)],
-             [40, this.rand(7, 17, 2, 50)],
-             [50, this.rand(7, 17, 2, 50)],
-             [60, this.rand(7, 17, 2, 50)],
-             [70, this.rand(7, 17, 2, 50)],
-             [80, this.rand(7, 17, 2, 50)],
-      ]
-    },
-    {
-      label: "car",
-      style: {
-        boxColor: "blue",
-      },
-      data: [[10, this.rand(7, 17, 2, 50)],
-             [20, this.rand(7, 17, 2, 50)],
-             [30, this.rand(7, 17, 2, 50)],
-             [40, this.rand(7, 17, 2, 50)],
-             [50, this.rand(7, 17, 2, 50)],
-             [60, this.rand(7, 17, 2, 50)],
-             [70, this.rand(7, 17, 2, 50)],
-             [80, this.rand(7, 17, 2, 50)],
-      ]
-    },
-  ];
+  @Input()
+  data: {label?: string, style?: {boxColor?: any}, data: [number, number][]}[];
 
   @Input()
   width: number;
@@ -93,9 +60,10 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.mBW = this.boxWidth/2;
+    setTimeout(() => this.draw(), 200);
   }
 
-  ngAfterViewInit() {
+  draw() {
 
     const tooltip = d3.select("#tooltip");
 
@@ -106,8 +74,9 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
         .attr("width", this.width)
         .attr("height", this.height);
 
-        const x = d3.scaleLinear()
-          .domain(this.rangeX)
+        const x = d3.scalePoint()
+          .padding(0.5)
+          .domain(this.data.map(row => row.label))
           .range([this.margin.left, this.width - this.margin.right]);
 
         const xAxis = d3.axisBottom(x);
@@ -116,98 +85,98 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
           .call(xAxis);
 
         const y = d3.scaleLinear()
-                    .domain(this.rangeY)
+                    .domain([0, 2000000])
                     .range([this.height - this.margin.bottom, this.margin.top]);
 
-        const yAxis = d3.axisLeft(y);
+        const yAxis = d3.axisLeft(y).tickFormat(d => this.magnitude(d));
         svg.append("g")
           .attr("transform", `translate(${this.margin.left}, 0)`)
           .call(yAxis);
 
-      this.mock.forEach(line =>
+
+
         svg
           .append("g")
           .selectAll("g")
-          .data(line.data)
+          .data(this.data)
           .join(enter => {
-            const box = enter.append("g");
-            this.plotBox(box, x, y, line.style);
-            return box;
-          }));
+            return enter.append("g")
+              .call(this.plotBox, x, y, this);
+          });
+
+        const f = d3.line().x(d => x(this.data[d[0]].label)).y(d => y(d[1]));
+
+        svg
+          .append("g")
+          .append("path")
+          .attr("fill", "none")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1)
+          .attr("stroke-dasharray", "2  2")
+          .datum(this.data.map((entry, i) => [i, d3.mean(entry.data.map(value => value[1]))] as [number, number]))
+          .attr("d", d => f(d));
 
 
-          this.mock.forEach(line =>
-            svg.append("g")
-            .selectAll("g")
-            .data([line.data.map(v => [v[0], d3.median(v[1])] as [number, number])])
-            .join(enter => {
-            const lineGen = d3.line().x(d => x(d[0])).y(d => y(d[1]));
-              enter.append("g").append("path")
-                .attr("fill", "none")
-                .attr("stroke", line.style.boxColor)
-                .datum(d => d)
-                .attr("d", d => lineGen(d))
-
-
-            return null;
-          }))
   }
 
 
-  plotBox = function (selection, x: ScaleLinear<number, number, never>, y: ScaleLinear<number, number, never>, style) {
-    const evaluate = (data: [number, number[]]) => {
-      const values = data[1].sort();
+  plotBox(selection, x, y, self) {
+    const evaluate = (i, data: any) => {
+      const values = data.data.map(entry => entry[1]);
+      console.log("box", values);
+
       return {
-        x: data[0],
+        x: data.label,
         max: d3.max(values),
         q3: d3.quantile(values, 0.75),
         median: d3.median(values),
         q1: d3.quantile(values, 0.25),
-        min: d3.min(values)
+        min: d3.min(values),
+        color: data.style.boxColor
       }
     }
-    const g = selection.datum(d => evaluate(d));
+    const g = selection.datum((d, i) => evaluate(i, d));
 
     g.append("line")
       .attr("x1", d => x(d.x))
       .attr("x2", d => x(d.x))
       .attr("y1", d => y(d.max))
       .attr("y2", d => y(d.min))
-      .attr("stroke", style.boxColor)
-      .call(sel => this.tooltip(sel));
+      .attr("stroke", d => d.color)
+      .call(sel => self.tooltip(sel));
 
     g.append("rect")
-      .attr("x", d => x(d.x) - this.mBW)
+      .attr("x", d => x(d.x) - self.mBW)
       .attr("y", d => y(d.q3))
-      .attr("width", this.boxWidth)
+      .attr("width", self.boxWidth)
       .attr("height", d => Math.abs(y(d.q1) - y(d.q3)))
       .attr("fill", "white")
-      .attr("stroke", style.boxColor)
-      .call(sel => this.tooltip(sel));
+      .attr("stroke", d => d.color)
+      .call(sel => self.tooltip(sel));
 
     g.append("line")
-      .attr("x1", d => x(d.x) - this.mBW)
-      .attr("x2", d => x(d.x) + this.mBW)
+      .attr("x1", d => x(d.x) - self.mBW)
+      .attr("x2", d => x(d.x) + self.mBW)
       .attr("y1", d => y(d.min))
       .attr("y2", d => y(d.min))
-      .attr("stroke", style.boxColor)
-      .call(sel => this.tooltip(sel));
+      .attr("stroke", d => d.color)
+      .call(sel => self.tooltip(sel));
 
     g.append("line")
-      .attr("x1", d => x(d.x) - this.mBW)
-      .attr("x2", d => x(d.x) + this.mBW)
+      .attr("x1", d => x(d.x) - self.mBW)
+      .attr("x2", d => x(d.x) + self.mBW)
       .attr("y1", d => y(d.max))
       .attr("y2", d => y(d.max))
-      .attr("stroke", style.boxColor)
-      .call(sel => this.tooltip(sel));
+      .attr("stroke", d => d.color)
+      .call(sel => self.tooltip(sel));
 
     g.append("line")
-      .attr("x1", d => x(d.x) - this.mBW)
-      .attr("x2", d => x(d.x) + this.mBW)
+      .attr("x1", d => x(d.x) - self.mBW)
+      .attr("x2", d => x(d.x) + self.mBW)
       .attr("y1", d => y(d.median))
       .attr("y2", d => y(d.median))
-      .attr("stroke", style.boxColor)
-      .call(sel => this.tooltip(sel));
+      .attr("stroke", d => d.color)
+      .call(sel => self.tooltip(sel));
 
   }
 
@@ -240,13 +209,13 @@ export class BoxplotComponent implements OnInit, AfterViewInit {
         });
   }
 
-  rand(from, to, std, n) {
-    let v = [];
-    const mean = from + (to - from) * Math.random();
-    for (let i = 0; i < n; ++i)
-      v.push(mean + std * Math.random());
+  magnitude(value) {
+    let i = 1;
+    while ((value / (Math.pow(10, i))) > 1)
+      i += 1;
 
-    return v;
+    const idx = Math.floor(i / 3);
+    return (value / (Math.pow(10, 3 * idx))).toString() + ["", "k", "M", "B"][idx];
   }
 
 

@@ -36,11 +36,10 @@ export class RadarplotComponent implements OnInit {
           let week_days = [];
 
           for (let day = 0; day < 7; ++day)
-            if (+week[+day])
-              week_days.push(+week[+day]);
+            if (+week[`_${day}`])
+              week_days.push(+week[`_${day}`]);
             else
               week_days.push(NaN);
-
           const mean = d3.mean(week_days);
           const max = d3.max(week_days);
 

@@ -24,6 +24,15 @@ export class AppComponent {
   tweetsCountsNorm: [number, number][][] = [[], [], []]; // fav, con, bot
   usersCounts: [number, number][][] = [[], [], []]; // fav, con, bot
 
+  tweetsByDay: {label?: string, style?: {boxColor?: any}, data: [number, number][]}[] = [
+    {label: "Seg", style: {boxColor: "black"}, data: []},
+    {label: "Ter", style: {boxColor: "black"}, data: []},
+    {label: "Qua", style: {boxColor: "black"}, data: []},
+    {label: "Qui", style: {boxColor: "black"}, data: []},
+    {label: "Sex", style: {boxColor: "black"}, data: []},
+    {label: "Sáb", style: {boxColor: "black"}, data: []},
+    {label: "Dom", style: {boxColor: "black"}, data: []}]
+
   coordsAndLocsLoaded = false;
 
   constructor() {
@@ -35,6 +44,7 @@ export class AppComponent {
     this.loadCoordsAndLocations();
     this.loadBotsHeatmap();
     this.loadTweetsCounts();
+    this.loadTweetsDays();
   }
 
   loadSexWeek() {
@@ -77,11 +87,22 @@ export class AppComponent {
           this.usersCounts[1].push([week, +row.con_users]);
           this.usersCounts[2].push([week, +row.bot_users]);
       }
-    })
+    });
+  }
 
-    console.log("tweetsCounts", this.tweetsCounts);
-    console.log("tweetsCountsNorm", this.tweetsCountsNorm);
-    console.log("usersCounts", this.usersCounts);
+  loadTweetsDays() {
+    d3.csv("assets/daily_tweets.csv").then(rows => {
+      for (let row of rows) {
+        const week = +row.week;
+        this.tweetsByDay[0].data.push([week, +row._0])
+        this.tweetsByDay[1].data.push([week, +row._1])
+        this.tweetsByDay[2].data.push([week, +row._2])
+        this.tweetsByDay[3].data.push([week, +row._3])
+        this.tweetsByDay[4].data.push([week, +row._4])
+        this.tweetsByDay[5].data.push([week, +row._5])
+        this.tweetsByDay[6].data.push([week, +row._6])
+      }
+    });
   }
 
 
