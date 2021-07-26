@@ -123,7 +123,6 @@ export class BoxplotComponent implements OnInit {
   plotBox(selection, x, y, self) {
     const evaluate = (i, data: any) => {
       const values = data.data.map(entry => entry[1]);
-      console.log("box", values);
 
       return {
         x: data.label,

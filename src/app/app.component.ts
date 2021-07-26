@@ -33,6 +33,38 @@ export class AppComponent {
     {label: "Sáb", style: {boxColor: "black"}, data: []},
     {label: "Dom", style: {boxColor: "black"}, data: []}]
 
+
+    // estado, polaridade da semana; a favor vs. contra
+  usersPolarity: {key: string, values: [number, number][]}[] = [
+    {key: "DF", values: []},
+    {key: "PE", values: []},
+    {key: "SC", values: []},
+    {key: "RJ", values: []},
+    {key: "AL", values: []},
+    {key: "GO", values: []},
+    {key: "BA", values: []},
+    {key: "AC", values: []},
+    {key: "PR", values: []},
+    {key: "MA", values: []},
+    {key: "RS", values: []},
+    {key: "CE", values: []},
+    {key: "PB", values: []},
+    {key: "PA", values: []},
+    {key: "RN", values: []},
+    {key: "SP", values: []},
+    {key: "PI", values: []},
+    {key: "MG", values: []},
+    {key: "TO", values: []},
+    {key: "AM", values: []},
+    {key: "AP", values: []},
+    {key: "MT", values: []},
+    {key: "ES", values: []},
+    {key: "MS", values: []},
+    {key: "RO", values: []},
+    {key: "SE", values: []},
+    {key: "RR", values: []},
+  ]
+
   coordsAndLocsLoaded = false;
 
   constructor() {
@@ -45,6 +77,7 @@ export class AppComponent {
     this.loadBotsHeatmap();
     this.loadTweetsCounts();
     this.loadTweetsDays();
+    this.loadUsersLocs();
   }
 
   loadSexWeek() {
@@ -103,6 +136,31 @@ export class AppComponent {
         this.tweetsByDay[6].data.push([week, +row._6])
       }
     });
+  }
+
+  loadUsersLocs() {
+    d3.csv("assets/users_loc_fav.csv").then(rows => {
+      for (let row of rows) {
+        for (let i = 0; i < this.usersPolarity.length; ++i) {
+          const state = this.usersPolarity[i].key;
+          this.usersPolarity[i].values.push(<[number, number]>[+row[state], 0]);
+        }
+      }
+    });
+
+    d3.csv("assets/users_loc_con.csv").then(rows => {
+      let week = 0;
+      const index_con = 1;
+      for (let row of rows) {
+        for (let i = 0; i < this.usersPolarity.length; ++i) {
+          const state = this.usersPolarity[i].key;
+          this.usersPolarity[i].values[week][index_con] = +row[state];
+        }
+        week += 1;
+      }
+    });
+
+    console.log(this.usersPolarity);
   }
 
 

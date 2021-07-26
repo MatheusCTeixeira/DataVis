@@ -152,7 +152,8 @@
       <ng-container *ngIf="coordsAndLocsLoaded == true">
         <app-map
           [tweetCoords]="tweetsCoords"
-          [userLocations]="userLocs">
+          [userLocations]="userLocs"
+          [data]="usersPolarity">
         </app-map>
       </ng-container>
 
