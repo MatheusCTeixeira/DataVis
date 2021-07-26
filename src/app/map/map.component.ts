@@ -54,11 +54,13 @@ export class MapComponent implements OnInit {
 
     d3.json("assets/brazil_map.geojson").then((data: any) => {
       this.map = data;
-      this.plotWeek({first: true});
+      setTimeout(() => this.plotWeek({first: true}), 200);
     });
 
     this.weeks_no = d3.range(1, 36 + 1, 1);
     this.maxValue = d3.max(d3.merge(this.data.map(v => v.values)).map(tuple => Math.abs(tuple[0] - tuple[1])));
+
+
   }
 
   plotWeek(params?: {first?: boolean}) {
