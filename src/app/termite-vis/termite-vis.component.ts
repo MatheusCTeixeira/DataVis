@@ -110,9 +110,14 @@ export class TermiteVisComponent implements OnInit {
           .attr("x", 0)
           .attr("y", (d, i) => vScale(d[1]) - barWidth / 2)
           .attr("height", barWidth)
-          .attr("width", (d, i) => d3.max([d[0][1], 1]))
           .attr("rx", 0.2 *barWidth)
-          .attr("fill", "red");
+          .attr("width", (d, i) => 0)
+          .attr("fill", d => d3.interpolateReds(0))
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr("width", (d, i) => d3.max([d[0][1], 1]))
+          .attr("fill", d => d3.interpolateReds(d[0][1]/8));
 
         enter.append("text")
           .attr("dominant-baseline", "middle")
@@ -125,6 +130,7 @@ export class TermiteVisComponent implements OnInit {
   }
 
   drawContent(selection, content, vScale, hScale) {
+
     selection.append("g")
         .attr("class", "content")
       .selectAll("circle")
@@ -133,10 +139,15 @@ export class TermiteVisComponent implements OnInit {
         enter.append("circle")
           .attr("cx", d => hScale(d[0]))
           .attr("cy", d => vScale(d[1]))
-          .attr("r", d => Math.sqrt(d[2]))
-          .attr("fill", "rgba(0, 0, 0, 0.3")
+          .attr("r", 0)
+          .attr("fill", d => d3.interpolateReds(0))
           .attr("stroke", "black")
           .call(this.tooltip)
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr("fill", d => d3.interpolateReds(Math.random()))
+          .attr("r", d => Math.sqrt(100 * Math.random()))
           )
 
   }
