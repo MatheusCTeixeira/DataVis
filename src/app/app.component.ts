@@ -17,6 +17,13 @@ export class AppComponent {
   tweetsCoords = null;
   userLocs = null;
   bots = null;
+  tweetsCountsLegend = ["à favor", "contra", "bot"];
+  tweetsCounts: [number, number][][] = [[], [], []]; // fav, con, bot
+
+  tweetsCountsNormLegend = ["à favor", "contra", "bot"];
+  tweetsCountsNorm: [number, number][][] = [[], [], []]; // fav, con, bot
+  usersCounts: [number, number][][] = [[], [], []]; // fav, con, bot
+
   coordsAndLocsLoaded = false;
 
   constructor() {
@@ -27,6 +34,7 @@ export class AppComponent {
     this.loadSexWeek();
     this.loadCoordsAndLocations();
     this.loadBotsHeatmap();
+    this.loadTweetsCounts();
   }
 
   loadSexWeek() {
@@ -51,6 +59,29 @@ export class AppComponent {
 
   loadBotsHeatmap() {
     d3.csv("assets/bots_heatmap.csv").then(bots => this.bots = bots);
+  }
+
+  loadTweetsCounts() {
+    d3.csv("assets/tweets.csv").then(rows => {
+      for (let row of rows) {
+          const week = +row.week;
+          this.tweetsCounts[0].push([week, +row.fav]);
+          this.tweetsCounts[1].push([week, +row.con]);
+          this.tweetsCounts[2].push([week, +row.bot]);
+
+          this.tweetsCountsNorm[0].push([week, +row.fav_norm]);
+          this.tweetsCountsNorm[1].push([week, +row.con_norm]);
+          this.tweetsCountsNorm[2].push([week, +row.bot_norm]);
+
+          this.usersCounts[0].push([week, +row.fav_users]);
+          this.usersCounts[1].push([week, +row.con_users]);
+          this.usersCounts[2].push([week, +row.bot_users]);
+      }
+    })
+
+    console.log("tweetsCounts", this.tweetsCounts);
+    console.log("tweetsCountsNorm", this.tweetsCountsNorm);
+    console.log("usersCounts", this.usersCounts);
   }
 
 

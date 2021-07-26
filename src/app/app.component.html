@@ -62,8 +62,23 @@
         é possível verificar a proximidade entre a razão <code> # tweets / # usuários</code>
       </p>
       <div style="display:flex; justify-content: space-around;">
-      <app-lineplot [normalized]="false" innerId="fig_1"></app-lineplot>
-      <app-lineplot [normalized]="true" innerId="fig_2"></app-lineplot>
+      <app-lineplot
+        [data]="tweetsCounts"
+        [legend]="tweetsCountsLegend"
+        [width]="450"
+        [height]="300"
+        [margin]="{bottom: 30, top: 30, left: 35, right: 10}"
+        innerId="fig_1">
+      </app-lineplot>
+
+      <app-lineplot
+        [data]="tweetsCountsNorm"
+        [legend]="tweetsCountsNormLegend"
+        [width]="450"
+        [height]="300"
+        [margin]="{bottom: 30, top: 30, left: 35, right: 10}"
+        innerId="fig_2">
+      </app-lineplot>
       </div>
       <h4>Padrões temporal de comportamento</h4>
       <p>

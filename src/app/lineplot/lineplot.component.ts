@@ -9,9 +9,13 @@ import { DecimalPipe } from '@angular/common';
   styleUrls: ['./lineplot.component.scss']
 })
 export class LineplotComponent implements OnInit {
-  height = 300;
-  width = 450;
+  @Input()
+  height;
 
+  @Input()
+  width;
+
+  @Input()
   margin = {bottom: 30, top: 30, left: 40, right: 30};
   maxValue = 0;
 
@@ -21,29 +25,16 @@ export class LineplotComponent implements OnInit {
   @Input()
   innerId: string;
 
-  data_b =  new Map<string, [number, number][]>();
+  @Input()
+  data: [number, number][][];
+
+  @Input()
+  legend: string[];
 
   constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit() {
-    d3.csv("assets/tweets.csv")
-      .then(data => {
-        for (let row of data) {
-          for (const key of Object.keys(row)) {
-            if (key == "week" || (this.normalized && !key.includes("norm")))
-              continue
-
-            if (!this.data_b.has(key))
-              this.data_b.set(key, []);
-
-            this.data_b.get(key).push([+row["week"], +row[key]] as [number, number]);
-
-            if (+row[key] > this.maxValue)
-              this.maxValue = +row[key];
-          }
-        }
-        this.plot();
-      })
+    setTimeout(() => this.plot(), 200);
   }
 
   plot(): void {
@@ -55,7 +46,7 @@ export class LineplotComponent implements OnInit {
 
     const hScale = d3Scale.scaleLinear()
       .domain([1, 36])
-      .range([this.margin.left, this.width]);
+      .range([this.margin.left, this.width - this.margin.right]);
 
     const axisX = d3.axisBottom(hScale);
 
@@ -63,60 +54,78 @@ export class LineplotComponent implements OnInit {
       .attr("transform", `translate(0, ${this.height-this.margin.bottom})`)
       .call(axisX);
 
+    this.maxValue = d3.max(<number[]>d3.merge(this.data.map(row => row.map(d => d[1]))));
     const vScale = d3Scale.scaleLinear()
-      .domain([0, this.maxValue])
+      .domain([0, 1.2 * this.maxValue])
       .range([this.height - this.margin.top, this.margin.bottom]);
 
-    const axisY = d3.axisLeft(vScale)
-      .tickFormat((v: number) => `${this.normalized ? v : Math.round(v/10000)/100}`);
+    const axisY = d3.axisLeft(vScale).tickFormat(d => this.magnitude(d));
 
     svg.append("g")
       .attr("transform", `translate(${this.margin.left}, 0)`)
       .call(axisY);
 
-
-    const color = {
-      "con": "red",
-      "fav": "green",
-      "bot": "gray",
-      "con_norm": "red",
-      "fav_norm": "green",
-      "bot_norm": "gray"
-    };
-
     const f = d3.line()
       .x(d=>hScale(d[0]))
       .y(d=>vScale(d[1]))
-      .curve(d3.curveBasisOpen);
 
     svg
     .append("g")
       .selectAll("path")
-      .data(Array.from(this.data_b.entries()))
-      .join("path")
-        .attr("fill", "none")
-        .attr("stroke-width", 4)
-        .attr("stroke", d => color[d[0]])
-      .datum((d: any) => d[1])
-      .attr("d", f);
+      .data(this.data)
+      .join(enter => {
+          const path = enter.append("path")
+            .attr("fill", "none")
+            .attr("stroke-width", 2)
+            .attr("stroke", "black")
+            .attr("d", d => f(d));
+
+          const step = Math.floor((this.data[0].length-1)/5);
+
+          enter.append("line")
+            .attr("x1", (d, i) => hScale((d[(i + 1) * step][0])))
+            .attr("y1", (d, i) => vScale((d[(i + 1) * step][1])))
+            .attr("x2", (d, i) => hScale((d[(i + 1) * step][0])) + 20)
+            .attr("y2", (d, i) => 40 + 30 * (i+1))
+            .attr("stroke", "black")
+            .attr("stroke-dasharray", "2  2")
+            .attr("stroke-width", 1);
+
+          var totalLength = path.node().getTotalLength();
+
+          path
+            .attr("stroke-dasharray", totalLength + " " + totalLength)
+            .attr("stroke-dashoffset", totalLength)
+            .transition()
+              .duration(5000)
+              .ease(d3.easeLinear)
+              .attr("stroke-dashoffset", 0);
+
+          return enter.append("text")
+            .attr("x", (d, i) => hScale((d[(i + 1) * step][0])) + 20)
+            .attr("y", (d, i) => 40 + 30 * (i+1))
+            .html((d, i) => this.legend[i]);
+
+      });
 
     const line = svg.append("line").attr("class", "guide");
     svg
-    .on("click", (event) => {
+    .on("mouseover", (event) => {
       this.drawGuide(line, event.offsetX, vScale, hScale);
     });
   }
 
   drawGuide(selection, x, vScale, hScale) {
-    selection
-      .attr("x1", x)
-      .attr("y1", vScale(0))
-      .attr("x2", x)
-      .attr("y2", hScale(15))
-      .attr("stroke", "black")
-      .attr("stroke-width", 1)
 
   }
 
+  magnitude(value) {
+    let i = 1;
+    while ((value / (Math.pow(10, i))) > 1)
+      i += 1;
+
+    const idx = Math.floor(i / 3);
+    return (value / (Math.pow(10, 3 * idx))).toString() + ["", "k", "M", "B"][idx];
+  }
 
 }
