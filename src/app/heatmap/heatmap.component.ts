@@ -25,7 +25,7 @@ export class HeatmapComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    setTimeout(() => this.draw(), 200);
+    setTimeout(() => this.draw(), 500);
   }
 
   draw() {

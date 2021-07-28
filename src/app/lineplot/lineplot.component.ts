@@ -34,7 +34,7 @@ export class LineplotComponent implements OnInit {
   constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit() {
-    setTimeout(() => this.plot(), 200);
+    setTimeout(() => this.plot(), 500);
   }
 
   plot(): void {

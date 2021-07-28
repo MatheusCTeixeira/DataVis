@@ -62,6 +62,7 @@
         é possível verificar a proximidade entre a razão <code> # tweets / # usuários</code>
       </p>
       <div style="display:flex; justify-content: space-around;">
+
       <app-lineplot
         [data]="tweetsCounts"
         [legend]="tweetsCountsLegend"
@@ -94,11 +95,13 @@
         o que pode ser observado comparados com os grids de referência do gráfico.
       </p>
       <div style="display:flex; justify-content: space-around;">
+
         <app-radarplot
           [width]="400"
           [height]="300"
           >
         </app-radarplot>
+
         <app-boxplot
           innerId="bar_1"
           [width]="400"
@@ -109,6 +112,7 @@
           [data]="tweetsByDay"
           [margin]="{top: 20, bottom: 20, left: 40, right: 30}">
         </app-boxplot>
+
       </div>
 
       <h4>Perfis dos usuários</h4>
@@ -121,7 +125,6 @@
         que não foi pessível determinar o sexo foi superior a ambos os sexos, logo
         não é possível afirmar qual dos dois sexos é o que mais utilizou a plataforma.
       </p>
-      <ng-container *ngIf="sexWeekLoaded">
       <app-barplot
           innerId="barplotSex"
           [margin]="{top: 30, right: 10, bottom: 30, left: 45}"
@@ -134,8 +137,7 @@
           axisX="Semana"
           axisY="# tweets"
           >
-        </app-barplot>
-      </ng-container>
+      </app-barplot>
 
       <h4>Localização geográfica dos usuários</h4>
       <p>

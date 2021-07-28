@@ -7,12 +7,12 @@ import { BarData, BarSeries } from './types/bardata';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
-  show = false;
-  sexWeekLoaded = false;
-  sexWeek= [new BarSeries("Masc.").addStyle({fillColor: "blue"}),
-            new BarSeries("Fem.").addStyle({fillColor: "red"}),
-            new BarSeries("Desc.").addStyle({fillColor: "lightgray"})];
+export class AppComponent { //                          x        y0       yf
+  sexWeek: {keys: string[], colors: string[], values: [string, number, number][][]} = {
+    keys: ["Masc.", "Fem.", "Desc."],
+    colors: ["blue", "red", "gray"],
+    values: []
+  }
 
   tweetsCoords = null;
   userLocs = null;
@@ -81,16 +81,17 @@ export class AppComponent {
   }
 
   loadSexWeek() {
-    d3.csv("assets/sex_weeks.csv")
-    .then((rows: any[]) => {
-      rows = <{week_no: number; m: number; f: number; unknown: number}[]>(<unknown>rows);
+    d3.csv("assets/sex_weeks.csv").then((rows: any[]) => {
       for (let row of rows) {
-        this.sexWeek[0].series.push({x: +row.week_no, y: +row.m});
-        this.sexWeek[1].series.push({x: +row.week_no, y: +row.f});
-        this.sexWeek[2].series.push({x: +row.week_no, y: +row.unknown});
-      }
+        let Yf = d3.cumsum([+row.m, +row.f, +row.unknown]);
+        let Y0 = [0, +row.m, +row.f + +row.m];
 
-      setTimeout(() => this.sexWeekLoaded = true, 500);
+        let buffer: [string, number, number][] = [];
+        for (let i = 0; i < 3; ++i)
+          buffer.push(<[string, number, number]>[row.week, Y0[i], Yf[i]]);
+
+        this.sexWeek.values.push(buffer);
+      }
     });
   }
 
@@ -159,8 +160,6 @@ export class AppComponent {
         week += 1;
       }
     });
-
-    console.log(this.usersPolarity);
   }
 
 

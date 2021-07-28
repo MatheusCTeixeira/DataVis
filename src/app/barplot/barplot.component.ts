@@ -17,7 +17,7 @@ interface IData {
   templateUrl: './barplot.component.html',
   styleUrls: ['./barplot.component.scss']
 })
-export class BarplotComponent implements OnInit, AfterViewInit {
+export class BarplotComponent implements OnInit {
   @Input()
   innerId: string;
 
@@ -31,10 +31,7 @@ export class BarplotComponent implements OnInit, AfterViewInit {
   width: number;
 
   @Input()
-  data_b: BarSeries[];
-
-  @Input()
-  data: BarSeries[];
+  data: {keys: string[], colors: string[], values: [string, number, number][][]};
 
   @Input()
   stacked: boolean;
@@ -44,6 +41,8 @@ export class BarplotComponent implements OnInit, AfterViewInit {
 
   @Input()
   rangeX: [number, number];
+
+  domain: string[];
 
   @Input()
   rangeY: [number, number];
@@ -56,28 +55,29 @@ export class BarplotComponent implements OnInit, AfterViewInit {
 
   stackValues: number[];
 
-  once = true;
+  maxValue = 0;
 
   constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit(): void {
-
-  }
-
-  ngAfterViewInit() {
-    this.plot();
+    setTimeout(() => this.plot(), 500);
   }
 
   plot() {
+    this.maxValue = d3.max(this.data.values.map(v => v[v.length -1][2]));
+    this.domain = this.data.values.map(bars => bars.map(bar => bar[0])[0]);
+
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
       .append("g");
 
-    const hScale = d3.scaleLinear()
-                    .domain(this.rangeX)
-                    .range([this.margin.left, this.width - this.margin.right]);
+    const hScale = d3.scaleBand()
+                    .domain(this.domain)
+                    .range([this.margin.left, this.width - this.margin.right])
+                    .paddingInner(0.1)
+                    .round(true);
 
     const hAxis = d3.axisBottom(hScale).ticks(15);
 
@@ -89,48 +89,112 @@ export class BarplotComponent implements OnInit, AfterViewInit {
       .call(hAxis);
 
     const vScale = d3.scaleLinear()
-        .domain(this.rangeY)
+        .domain([0, this.maxValue])
         .range([this.height - this.margin.bottom, this.margin.top]);
 
     const vAxis = d3.axisLeft(vScale).tickFormat((v: number) => `${Math.round(v/1000000)}M`);
 
     svg.append("g")
-      .attr("transform", `translate(${this.margin.left}, 0)`).call(vAxis);
+      .attr("transform", `translate(${this.margin.left}, 0)`)
+      .call(vAxis);
 
-    this.data.forEach((row, i) => {
-      console.log(row);
-      if (this.stacked)
-        if (this.stackValues != null)
-          this.stackValues = this.data[i-1].series.map((v, i) => v.y + this.stackValues[i]);
-        else
-          this.stackValues = row.series.map(v => 0);
+    this.drawBars(svg, vScale, hScale);
 
-      svg
+    this.drawDiff(svg, this.width/2, 0, this.width/2, this.height/3)
+
+  }
+
+  drawBars(selection, vScale, hScale) {
+    selection
+    .append("g")
+    .attr("class", "bars")
+    .selectAll("g")
+    .data(this.data.values)
+    .join(enter => {
+      const bars = enter
         .append("g")
-        .selectAll("rect")
-        .data(row.series)
-        .join(
-          enter => {
-            const t = d3.transition().duration(500).delay(500).ease(d3.easeSinInOut);
-            const rect = enter
-                .append("rect")
-                  .call(enter => this.tooltip(enter))
-                  .attr("fill", row.style.fillColor)
-                .call(sel => this.drawBar(sel, hScale, vScale))
-            return rect;
-          });
-    })
+          .attr("class", "bar");
+
+      bars.selectAll("g")
+        .data(d => d, key => key[0])
+        .join(enter => enter
+            .append("rect")
+              .attr("x", d => hScale(`${d[0]}`))
+              .attr("y", (d, i) => vScale(d[2]))
+              .attr("width", (d, i) => hScale.bandwidth())
+              .attr("height", (d, i) => vScale(d[1]) - vScale(d[2]))
+              .attr("fill", (d, i) => this.data.colors[i])
+              .call((sel) => this.tooltip(sel)));
+
+      return bars;
+    });
   }
 
-  drawBar(enter, x: d3.ScaleLinear<number, number, never>, y: d3.ScaleLinear<number, number, never>) {
-    if (this.stacked) {
-      enter
-      .attr("x", (d: any) => x(d.x))
-      .attr("y", (d: any, i) => y(d.y + this.stackValues[i]))
-      .attr("width", 0.8 * (x(1) - x(0)))
-      .attr("height", d => y(0) - y(d.y));
-    }
+  drawDiff(selection, xBase, yBase, width, height) {
+    const diffs = this.data.values.map(v => <[string, number]>[v[0][0], (v[0][2] - v[0][1])/(v[1][2] - v[1][1])]);
+    const maxDiff = d3.max(diffs.map(v => v[1]));
+    diffs.forEach(v => v[1] = 100*v[1]/maxDiff);
+
+    const vScale = d3.scaleLinear()
+      .domain([0, 100])
+      .range([height, yBase + this.margin.top]);
+
+    const vAxis = d3.axisLeft(vScale);
+
+    selection.append("g")
+      .attr("transform", `translate(${xBase}, 0)`)
+      .call(vAxis);
+
+    const hScale = d3.scaleBand()
+      .domain(this.domain)
+      .range([xBase, xBase + width])
+      .paddingInner(0.2)
+      .round(true);
+
+    const hAxis = d3.axisBottom(hScale);
+
+    selection.append("g")
+      .attr("transform", `translate(0, ${vScale(0)})`)
+      .call(hAxis);
+
+    selection.append("g")
+      .attr("class", "barsDiff")
+      .selectAll("rect")
+      .data(diffs)
+      .join(enter =>
+        enter.append("rect")
+          .attr("x", d => hScale(d[0]))
+          .attr("width", hScale.bandwidth())
+          .attr("y", d => vScale(d[1]))
+          .attr("height", d => vScale(0) - vScale(d[1]))
+          .attr("fill", "rgba(0, 0, 255, 0.4)")
+      );
+
+    selection.append("g")
+      .append("line")
+        .attr("x1", hScale("1"))
+        .attr("x2", hScale("36") + hScale.bandwidth())
+        .attr("y1", vScale(100))
+        .attr("y2", vScale(100))
+        .attr("stroke", "red");
+
+    selection.append("text")
+      .attr("x", hScale("15"))
+      .attr("y", vScale(100) - 5)
+      .html("Ref: # Fem.");
+
+    selection.append("text")
+      .attr("x", hScale("15"))
+      .attr("y", yBase + height + 30)
+      .html("Semana");
+
+      selection.append("text")
+      .attr("text-anchor", "middle")
+      .attr("transform", `translate(${xBase - 30}, ${vScale(50)}) rotate(-90)`)
+      .html("Razão (%)");
+
   }
+
 
   tooltipHtml(i) {
     let message = `
@@ -138,14 +202,17 @@ export class BarplotComponent implements OnInit, AfterViewInit {
       <div style="align-self: center;">ESTATÍSTICAS</div>
       <div>Semana: ${i}</div>`
 
-    const total = this.data.map(v => v.series[i-1].y).reduce((a, b) => a + b);
-    for (let bar of this.data.reverse()) {
-      const value = bar.series[i-1].y;
-      const pp = 100 * value / total;
-      const formatedValue = this.decimalPipe.transform(value, "1.0-0", "pt");
-      const formatedPP = this.decimalPipe.transform(pp, "1.2-2", "pt");
-     message += `<div>${bar.label}: ${formatedValue} (${formatedPP}%)</div>`;
-    }
+      console.log(i);
+      const values = this.data.values.filter(v => v[0][0] === i)[0];
+      const total = values[values.length - 1][2];
+
+      for (let k = 0; k < this.data.keys.length; ++k) {
+        const value = values[k][2] - values[k][1]; // Yf - Y0
+        const pp = 100 * value / total;
+        const formatedValue = this.decimalPipe.transform(value, "1.0-0", "pt");
+        const formatedPP = this.decimalPipe.transform(pp, "1.2-2", "pt");
+        message += `<div>${this.data.keys[k]}: ${formatedValue} (${formatedPP}%)</div>`;
+      }
 
     message += "</div>"
     return message;
@@ -157,7 +224,7 @@ export class BarplotComponent implements OnInit, AfterViewInit {
        .on("mouseover", (e, data) => {
           const t = d3.transition().duration(400).ease(d3.easeLinear);
           tooltip
-          .html(this.tooltipHtml(data.x))
+          .html(this.tooltipHtml(data[0]))
           .style("visibility", "visible")
           .style("opacity", 0)
           .transition(t)

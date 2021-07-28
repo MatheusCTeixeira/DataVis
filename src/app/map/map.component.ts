@@ -54,7 +54,7 @@ export class MapComponent implements OnInit {
 
     d3.json("assets/brazil_map.geojson").then((data: any) => {
       this.map = data;
-      setTimeout(() => this.plotWeek({first: true}), 200);
+      setTimeout(() => this.plotWeek({first: true}), 500);
     });
 
     this.weeks_no = d3.range(1, 36 + 1, 1);
@@ -107,7 +107,6 @@ export class MapComponent implements OnInit {
     const week = +this.week_selected.value - 1;
     const polarity = d.values[week];
     const color = 0.5 * (polarity[0] - polarity[1])/this.maxValue;
-    console.log(week, polarity[0], polarity[1], (polarity[0] - polarity[1]), this.maxValue);
     return d3.interpolateRdYlGn(0.5 + color);
   }
 

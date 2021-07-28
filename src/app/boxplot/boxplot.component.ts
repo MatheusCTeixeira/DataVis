@@ -60,7 +60,7 @@ export class BoxplotComponent implements OnInit {
 
   ngOnInit(): void {
     this.mBW = this.boxWidth/2;
-    setTimeout(() => this.draw(), 200);
+    setTimeout(() => this.draw(), 500);
   }
 
   draw() {
