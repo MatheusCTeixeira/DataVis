@@ -1,3 +1,4 @@
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ClassGetter } from '@angular/compiler/src/output/output_ast';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
@@ -5,6 +6,7 @@ import * as d3 from "d3";
 import * as d3Geo from "d3-geo";
 import * as d3ToPng from 'd3-svg-to-png';
 import { Margin } from '../types/margin';
+import { Polarities } from '../types/polaritiries';
 
 @Component({
   selector: 'app-map',
@@ -23,10 +25,10 @@ export class MapComponent implements OnInit {
   showingSmallMultiples = false;
 
   @Input()
-  margin: Margin = {left: 30, right: 30, top: 30, bottom: 30};
+  margin: Margin = { left: 30, right: 30, top: 30, bottom: 30 };
 
   @Input()
-  data: {key: string, values: [number, number][]}[];
+  data: Polarities[];
 
   @Input()
   tweetCoords;
@@ -34,13 +36,15 @@ export class MapComponent implements OnInit {
   @Input()
   userLocations;
 
-  constructor() { }
+  constructor(
+    private datePipe: DatePipe,
+    private decPipe: DecimalPipe) { }
 
   ngOnInit(): void {
     this.svg = d3.select("#map")
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height)
+      .attr("width", this.width)
+      .attr("height", this.height)
       .append("g");
 
     [this.userLocations, this.tweetCoords].forEach(values => {
@@ -56,31 +60,26 @@ export class MapComponent implements OnInit {
 
     d3.json("assets/brazil_map.geojson").then((data: any) => {
       this.map = data;
-      setTimeout(() => {this.plot(); this.plotWeek()}, 500);
+      setTimeout(() => { this.smallMultiples() }, 500);
     });
 
     this.weeks_no = d3.range(1, 36 + 1, 1);
-    this.maxValue = d3.max(d3.merge(this.data.map(v => v.values)).map(tuple => Math.abs(tuple[0] - tuple[1])));
+    this.maxValue = d3.max(this.data.map(v => d3.max(Object.values(v).map(v => Math.abs(v[0] - v[1])))).map(v => v));
   }
 
-  plot() {
+  plotWeek(week: number) {
     d3.select("#map").selectAll("*").remove();
 
     this.svg = d3.select("#map")
-        .append("svg")
-          .attr("width", this.width)
-          .attr("height", this.height)
-        .append("g")
-          .attr("class", "standardMap");
-  }
-
-  plotWeek() {
-    if (this.showingSmallMultiples)
-      this.plot();
-
+      .append("svg")
+      .attr("width", this.width)
+      .attr("height", this.height)
+      .append("g")
+      .attr("class", "standardMap");
 
     const cuiaba = <[number, number]>[-15.595833, -56.096944];
 
+    // Contruct the projection callback
     let projection = d3Geo.geoEquirectangular()
       .center(cuiaba)
       .fitExtent([
@@ -90,50 +89,59 @@ export class MapComponent implements OnInit {
 
     let geoGenerator = d3Geo.geoPath().projection(projection);
 
-    const sortFuncA = (a, b) => a.properties
-                                 .code
-                                 .localeCompare(b.properties.code);
-
-    const sortFuncB = (a, b) => a.key.localeCompare(b.key);
-
+    // Plot main content, ie, the map
     this.svg
       .selectAll("path")
-      .data(
-        d3.zip(this.map.features.sort(sortFuncA),
-               this.data.sort(sortFuncB)), d => d[1].key)
+      .data(this.map.features)
       .join(enter =>
         enter.append("path")
-          .attr("d", d => geoGenerator(d[0]))
+          .attr("d", d => geoGenerator(d))
           .attr("stroke", "#000")
           .attr("stroke-width", 1)
-          .attr("fill", d => this.setColor(d[1]))
-          .call((sel) => this.tooltip(sel)),
-        update =>
-          update.attr("fill", d => update.attr("fill"))
-            .transition()
-            .duration(3000)
-            .ease(d3.easeLinear)
-          .attr("fill", d => this.setColor(d[1])));
+          .attr("fill", d => this.setColor(d.properties.code, this.data[week]))
+          .call((sel) => this.tooltip(sel, week, "weekly")));
+
+    // Plot return label
+    this.svg.append("text")
+      .text("← voltar")
+      .attr("class", "backBtn")
+      .attr("x", 15)
+      .attr("y", 15)
+      .style("font-size", 20)
+      .style("cursor", "pointer")
+      .on("click", () => this.smallMultiples());
+
+    // Plot current week indicator
+    let base = new Date(2020, 4, 26);
+    const from = base.setDate(base.getDate() + 7 * week);
+    base = new Date(2020, 4, 26);
+    const to = base.setDate(base.getDate() + 7 * (week + 1));
+    const fromAsString = this.datePipe.transform(from, 'dd/MM')
+    const toAsString = this.datePipe.transform(to, 'dd/MM')
+    this.svg.append("text")
+      .text(`${fromAsString} ─ ${toAsString}`)
+      .attr("x", this.width/2)
+      .attr("y", 15)
+      .attr("text-anchor", "middle")
+      .style("font-size", 20);
   }
 
-  setColor(d: {key: string, values: [number, number][]}) {
+  setColor(state, polarities: Polarities) {
     if (!this.maxValue) return 0;
-    const week = +this.week_selected.value - 1;
-    const polarity = d.values[week];
-    const color = 0.5 * (polarity[0] - polarity[1])/this.maxValue;
+    const color = 0.5 * (polarities[state][0] - polarities[state][1]) / this.maxValue;
     return d3.interpolateRdYlGn(0.5 + color);
   }
 
-  setColorSmallMultiples(d: {key: string, values: [number, number][]}, week) {
+  setColorSmallMultiples(d: { key: string, values: [number, number][] }, week) {
     if (!this.maxValue)
       return 0;
 
     const polarity = d.values[week];
-    const color = 0.5 * (polarity[0] - polarity[1])/this.maxValue;
+    const color = 0.5 * (polarity[0] - polarity[1]) / this.maxValue;
     return d3.interpolateRdYlGn(0.5 + color);
   }
 
-  plotSmallMultiples(selection, week, [centerX, centerY], [width, height] ) {
+  plotSmallMultiples(selection, week, [centerX, centerY], [width, height]) {
     this.showingSmallMultiples = true;
 
     const cuiaba: any = [-15.595833, -56.096944];
@@ -152,11 +160,12 @@ export class MapComponent implements OnInit {
       .data(this.map.features)
       .join(enter =>
         enter.append("path")
-        .attr("d", d => geoGenerator(d))
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1)
-        .attr("fill", (d, i) => this.setColorSmallMultiples(this.data[i], week)))
-        .call((sel) => this.tooltip(sel, week))
+          .attr("d", d => geoGenerator(d))
+          .attr("stroke", "#000")
+          .attr("stroke-width", 1)
+          .attr("fill", (d, i) => this.setColor(d.properties.code, this.data[week])))
+      .call((sel) => this.tooltip(sel, week, "summarized"))
+      .on("click", (e) => this.plotWeek(week));
   }
 
   smallMultiples() {
@@ -176,6 +185,7 @@ export class MapComponent implements OnInit {
     selection.append("g")
       .attr("class", "hAxis")
       .attr("transform", `translate(0, ${this.margin.top})`)
+      .style("visibility", "hidden")
       .call(hAxis);
 
     const vScale = d3.scaleBand()
@@ -190,6 +200,7 @@ export class MapComponent implements OnInit {
     selection.append("g")
       .attr("class", "vAxis")
       .attr("transform", `translate(${this.margin.left}, 0)`)
+      .style("visibility", "hidden")
       .call(vAxis);
 
 
@@ -204,43 +215,28 @@ export class MapComponent implements OnInit {
   }
 
   download() {
-    console.log("Downloading...")
-      d3ToPng.default("#map svg", "map.jpg", {quality: 100})
-        .then(res => {
-          console.log(res);
-        })
+    d3ToPng.default("#map svg", "map.jpg", { quality: 100 })
+      .then(res => {
+        console.log(res);
+      })
   }
 
-  tooltipHtml(d, i) {
-    let map_features = null;
-    let users_polarity = null;
-    let semana = null;
-
-    if (i != null) {
-      map_features = d;
-      users_polarity = this.data.find(v => v.key === map_features.properties.code);
-      semana = i;
-    } else {
-      map_features = d[0];
-      users_polarity = d[1];
-      semana = +this.week_selected.value - 1;
-    }
-
+  tooltipHtmlForWeekly(map_features, week) {
+    const transform = (v) => this.decPipe.transform(v, "1.0-0");
     const prop = map_features.properties;
-    const sigla = prop.code;
-    const estado = prop.name;
-
-    const n_coords = this.tweetCoords[semana][sigla];
-    const n_locations = this.userLocations[semana][sigla];
-    const fav = users_polarity.values[semana][0];
-    const con = users_polarity.values[semana][1];
+    const code = prop.code;
+    const state = prop.name;
+    const n_coords = transform(this.tweetCoords[week][code]);
+    const n_locations = transform(this.userLocations[week][code]);
+    const fav = transform(this.data[week][code][0]);
+    const con = transform(this.data[week][code][1]);
 
     return `
     <div style="display: flex; justify-content: flex-start; flex-flow: column;">
     <div style="align-self: center;">ESTATÍSTICAS</div>
 
-      <div>${estado} - ${sigla}</div>
-      <div>${semana + 1}ª semana</div>
+      <div>${state} - ${code}</div>
+      <div>${week + 1}ª semana</div>
       <div>${n_coords} coordinates</div>
       <div>${n_locations} locations</div>
       <div>${fav} usuários à favor</div>
@@ -249,32 +245,54 @@ export class MapComponent implements OnInit {
     `;
   }
 
-  tooltip(selection, i = null) {
+  tooltipHtmlForSmallMultiples(week) {
+    const transform = (v) => this.decPipe.transform(v, "1.0-0");
+
+    const n_coords = d3.sum(<number[]>Object.values(this.tweetCoords[week]));
+
+    const n_locations = d3.sum(<number[]>Object.values(this.userLocations[week]));
+    const fav = d3.sum(<number[]>Object.values(this.data[week]).map(v => v[0]));
+    const con = d3.sum(<number[]>Object.values(this.data[week]).map(v => v[1]));
+
+    return `
+    <div style="display: flex; justify-content: flex-start; flex-flow: column;">
+    <div style="align-self: center;">ESTATÍSTICAS</div>
+      <div>${week + 1}ª semana</div>
+      <div>${transform(n_coords)} coordinates</div>
+      <div>${transform(n_locations)} locations</div>
+      <div>${transform(fav)} usuários à favor</div>
+      <div>${transform(con)} usuários contra</div>
+    </div>
+    `;
+  }
+
+  tooltip(selection, week, mode: string) {
     const tooltip = d3.select("#tooltip");
     selection
-       .on("mouseover", (e, data) => {
-          const t = d3.transition().duration(400).ease(d3.easeLinear);
-
-          tooltip
-          .html(d => this.tooltipHtml(data, i))
+      .on("mouseover", (_, data) =>
+        tooltip
+          .html(() => mode === "weekly" ? this.tooltipHtmlForWeekly(data, week) : this.tooltipHtmlForSmallMultiples(week))
           .style("visibility", "visible")
           .style("opacity", 0)
-          .transition(t)
+          .transition()
+            .duration(400)
+            .ease(d3.easeLinear)
           .style("opacity", 1)
-        })
-        .on("mousemove", e => {
-          tooltip
-            .style("visibility", "visible")
-            .style("left", e.pageX + 20 + "px")
-            .style("top", e.pageY + "px");
-        })
-        .on("mouseout", () => {
-          const t = d3.transition().duration(400).ease(d3.easeLinear)
-          tooltip
+      )
+      .on("mousemove", e =>
+        tooltip
+          .style("visibility", "visible")
+          .style("left", e.pageX + 20 + "px")
+          .style("top", e.pageY + "px")
+      )
+      .on("mouseout", () =>
+        tooltip
           .style("opacity", 1)
-          .transition(t)
+          .transition()
+            .duration(400)
+            .ease(d3.easeLinear)
           .style("opacity", 0)
-          .style("visibility", "hidden");
-        });
+          .style("visibility", "hidden")
+      );
   }
 }

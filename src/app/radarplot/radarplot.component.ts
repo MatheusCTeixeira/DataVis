@@ -19,12 +19,7 @@ export class RadarplotComponent implements OnInit {
   @Input() width = 400;
   @Input() height = 400;
 
-  margin = {
-    left: 30,
-    right: 30,
-    top: 30,
-    bottom: 30
-  }
+  margin = 30;
 
   constructor() { }
 
@@ -56,9 +51,12 @@ export class RadarplotComponent implements OnInit {
 
   draw(): void {
     const PI = 3.14159265359;
-    const CX = this.margin.left + (this.width - this.margin.left - this.margin.right)/2;
-    const CY = this.margin.top + (this.height - this.margin.top - this.margin.bottom)/2;
+    const CX = this.margin + (this.width - 2 * this.margin)/2;
+    const CY = this.margin + (this.height - 2 * this.margin)/2;
     const RD = this.width/3;
+
+    const sin = (i) => Math.sin(2* PI * i / 7);
+    const cos = (i) => Math.cos(2* PI * i / 7);
 
     const svg = d3.select("#radar")
       .append("svg")
@@ -66,10 +64,24 @@ export class RadarplotComponent implements OnInit {
         .attr("height", this.height)
       .append("g");
 
+    const x = d3.scaleLinear()
+      .domain([1, 0])
+      .range([this.margin, CY]);
+
+    const r = d3.scaleLinear()
+      .domain([1, 0])
+      .range([Math.abs(CY - this.margin), 0]);
+
+    const axis = d3.axisRight(x);
+
+    svg.append("g")
+      .attr("transform", `translate(${CX}, 0)`)
+      .call(axis);
+
     svg
     .append("g")
     .selectAll("g")
-    .data(d3.range(6))
+    .data(d3.range(0, 1.1, 0.1))
     .join(
       enter => enter.append("g")
       .append("circle")
@@ -78,7 +90,7 @@ export class RadarplotComponent implements OnInit {
       .attr("stroke-width", 1)
       .attr("cx", CX)
       .attr("cy", CY)
-      .attr("r", (d, i) => i * RD/5));
+      .attr("r", (d, i) => r(d)));
 
     svg
     .append("g")
@@ -88,20 +100,19 @@ export class RadarplotComponent implements OnInit {
       enter.append("g")
       .append("line")
         .attr("fill", "none")
-        .attr("stroke", "rgba(0, 0, 0, 0.3)")
+        .attr("stroke", "rgba(0, 0, 0, 1)")
         .attr("stroke-width", 1)
         .attr("transform", `translate(${CX}, ${CY})`)
         .attr("x1", 0)
         .attr("y1", 0)
-        .attr("x2", (d, i) => RD * Math.sin(2* PI * i / this.data[0].length))
-        .attr("y2", (d, i) => -RD * Math.cos(2* PI * i / this.data[0].length));
+        .attr("y2", (d, i) => -r(1) * Math.cos(2* PI * i / 7))
+        .attr("x2", (d, i) => r(1) * Math.sin(2* PI * i / 7));
 
       return enter.append("text")
           .attr("fill", "black")
-          .attr("dominant-baseline", "hanging")
           .attr("text-anchor", "middle")
-          .attr("transform", (d, i) => `translate(${CX + 1.1 * RD * Math.sin(2* PI * i / 7)}, ${CY - 1.1 * RD * Math.cos(2* PI * i / 7)}) rotate(${360 * i / 7})`)
-        .html((d, i) => this.header[i])
+          .attr("transform", (d, i) => `translate(${CX + r(1.05) * sin(i)}, ${CY - r(1.05) * cos(i)}) rotate(${360 * i / 7})`)
+          .text((_, i) => this.header[i])
 
     });
 
@@ -119,25 +130,25 @@ export class RadarplotComponent implements OnInit {
       .attr("stroke", "rgba(45, 45, 45, 0.2)")
       .attr("stroke-width", 1)
       .attr("d", d3.lineRadial().angle((d, i) => {
-        return 2 * PI * i / 7;}).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)))
+        return 2 * PI * i / 7;}).radius((d, i) => r(1) * d[1]).curve(d3.curveLinearClosed)))
 
-      const factory = d3.lineRadial().angle((d, i) => 2 * PI * i / 7).radius((d, i) => RD * d[1]).curve(d3.curveCardinalClosed)
-        // const helperLine = enter
+    const factory = d3.lineRadial()
+      .angle((d, i) => 2 * PI * i / 7)
+      .radius((d, i) => RD * d[1])
+      .curve(d3.curveCardinalClosed);
 
     const statistics = [this.mean, this.median];
-    statistics.forEach(statistic => {
-      const helperLine = svg
-      .append("g")
-      .attr("transform", `translate(${CX}, ${CY})`)
-      .datum(statistic.map((v, i) => <[number, number]>[i, v]))
-      .append("path")
-        .attr("fill", "none")
-        .attr("stroke", "black")
-        .attr("stroke-width", 3)
-        .attr("d", factory);
 
-        helperLine.on("mouseover", e => this.highlight(helperLine, "on"));
-        helperLine.on("mouseout", e => this.highlight(helperLine, "off"));
+    statistics.forEach(statistic => {
+      svg.append("g")
+        .attr("transform", `translate(${CX}, ${CY})`)
+        .datum(statistic.map((v, i) => <[number, number]>[i, v]))
+        .append("path")
+          .attr("fill", "none")
+          .attr("stroke", "red")
+          .attr("stroke-width", 1.5)
+          .attr("d", factory);
+
     })
   }
 

@@ -65,19 +65,27 @@
 
       <app-lineplot
         [data]="tweetsCounts"
+        title="Quantidade de tweets de cada classe"
+        xLabel="Semana"
+        yLabel="# tweets"
         [legend]="tweetsCountsLegend"
+        [color]="tweetsCountColor"
         [width]="450"
         [height]="300"
-        [margin]="{bottom: 30, top: 30, left: 35, right: 10}"
+        [margin]="{bottom: 35, top: 35, left: 45, right: 10}"
         innerId="fig_1">
       </app-lineplot>
 
       <app-lineplot
         [data]="tweetsCountsNorm"
+        title="Quantidade de tweets normalizado pela quantidade de usuários"
+        xLabel="Semana"
+        yLabel="# tweets/# usuários"
         [legend]="tweetsCountsNormLegend"
+        [color]="tweetsCountColor"
         [width]="450"
         [height]="300"
-        [margin]="{bottom: 30, top: 30, left: 35, right: 10}"
+        [margin]="{bottom: 35, top: 35, left: 40, right: 10}"
         innerId="fig_2">
       </app-lineplot>
       </div>
@@ -104,13 +112,13 @@
 
         <app-boxplot
           innerId="bar_1"
-          [width]="400"
+          [width]="450"
           [height]="300"
           [rangeX]="[0, 100]"
           [rangeY]="[8, 20]"
           [boxWidth]="20"
           [data]="tweetsByDay"
-          [margin]="{top: 20, bottom: 20, left: 40, right: 30}">
+          [margin]="{top: 20, bottom: 30, left: 55, right: 30}">
         </app-boxplot>
 
       </div>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import * as d3 from "d3";
 import { BarData, BarSeries } from './types/bardata';
+import { Polarities } from './types/polaritiries';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +18,10 @@ export class AppComponent { //                          x        y0       yf
   tweetsCoords = null;
   userLocs = null;
   bots = null;
-  tweetsCountsLegend = ["à favor", "contra", "bot"];
+  tweetsCountsLegend = ["A Favor", "Contra", "Bot"];
   tweetsCounts: [number, number][][] = [[], [], []]; // fav, con, bot
-
-  tweetsCountsNormLegend = ["à favor", "contra", "bot"];
+  tweetsCountColor = ["green", "red", "grey"]
+  tweetsCountsNormLegend = ["A Favor", "Contra", "Bot"];
   tweetsCountsNorm: [number, number][][] = [[], [], []]; // fav, con, bot
   usersCounts: [number, number][][] = [[], [], []]; // fav, con, bot
 
@@ -35,35 +36,7 @@ export class AppComponent { //                          x        y0       yf
 
 
     // estado, polaridade da semana; a favor vs. contra
-  usersPolarity: {key: string, values: [number, number][]}[] = [
-    {key: "DF", values: []},
-    {key: "PE", values: []},
-    {key: "SC", values: []},
-    {key: "RJ", values: []},
-    {key: "AL", values: []},
-    {key: "GO", values: []},
-    {key: "BA", values: []},
-    {key: "AC", values: []},
-    {key: "PR", values: []},
-    {key: "MA", values: []},
-    {key: "RS", values: []},
-    {key: "CE", values: []},
-    {key: "PB", values: []},
-    {key: "PA", values: []},
-    {key: "RN", values: []},
-    {key: "SP", values: []},
-    {key: "PI", values: []},
-    {key: "MG", values: []},
-    {key: "TO", values: []},
-    {key: "AM", values: []},
-    {key: "AP", values: []},
-    {key: "MT", values: []},
-    {key: "ES", values: []},
-    {key: "MS", values: []},
-    {key: "RO", values: []},
-    {key: "SE", values: []},
-    {key: "RR", values: []},
-  ]
+  usersPolarity: Polarities[] = [];
 
   coordsAndLocsLoaded = false;
 
@@ -142,24 +115,28 @@ export class AppComponent { //                          x        y0       yf
   loadUsersLocs() {
     d3.csv("assets/users_loc_fav.csv").then(rows => {
       for (let row of rows) {
-        for (let i = 0; i < this.usersPolarity.length; ++i) {
-          const state = this.usersPolarity[i].key;
-          this.usersPolarity[i].values.push(<[number, number]>[+row[state], 0]);
-        }
+        let polarities = <Polarities>{};
+        const week = row.week;
+        delete row["week"];
+
+        for (let state in row)
+          polarities[state] = [+row[state], 0];
+
+        this.usersPolarity.push(polarities);
       }
     });
 
     d3.csv("assets/users_loc_con.csv").then(rows => {
-      let week = 0;
-      const index_con = 1;
       for (let row of rows) {
-        for (let i = 0; i < this.usersPolarity.length; ++i) {
-          const state = this.usersPolarity[i].key;
-          this.usersPolarity[i].values[week][index_con] = +row[state];
-        }
-        week += 1;
-      }
-    });
+        const week = +row.week;
+        delete row["week"];
+
+        for (const key in row)
+          this.usersPolarity[week - 1][key][1] = +row[key]
+
+    }});
+
+    console.log(this.usersPolarity);
   }
 
 

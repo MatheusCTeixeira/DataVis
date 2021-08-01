@@ -16,10 +16,10 @@ export class HeatmapComponent implements OnInit {
 
   width = 900;
   height = 900;
-  margin: Margin = {left: 60, right: 30, top: 60, bottom: 30};
+  margin: Margin = {left: 60, right: 30, top: 100, bottom: 30};
 
   heatmapWidth = 800;
-  heatmapGap = 5;
+  heatmapGap = 25;
   heatmapScaleWidth = 15;
 
   constructor() { }
