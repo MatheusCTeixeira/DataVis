@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { AfterContentInit, AfterViewChecked, Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
 import { Margin } from '../types/margin';
@@ -14,15 +15,15 @@ export class HeatmapComponent implements OnInit {
   @Input()
   data: any[] = null;
 
-  width = 900;
-  height = 900;
+  width = 950;
+  height = 950;
   margin: Margin = {left: 60, right: 30, top: 100, bottom: 30};
 
   heatmapWidth = 800;
-  heatmapGap = 25;
-  heatmapScaleWidth = 15;
+  heatmapGap = 15;
+  heatmapScaleWidth = 30;
 
-  constructor() { }
+  constructor(private _decPipe: DecimalPipe) { }
 
   ngOnInit(): void {
     setTimeout(() => this.draw(), 500);
@@ -51,27 +52,50 @@ export class HeatmapComponent implements OnInit {
   }
 
   drawScaler(selection) {
-  const gradient = selection
-    .append("defs")
-    .append("linearGradient")
-      .attr("gradientTransform", "rotate(90)")
-      .attr("id", "scaleGrad");
+    const gradient = selection
+      .append("defs")
+      .append("linearGradient")
+        .attr("gradientTransform", "rotate(90)")
+        .attr("id", "scaleGrad");
 
-  gradient
-    .selectAll("stop")
-    .data(d3.ticks(0, 1, 50))
-    .join(
-      enter => enter.append("stop")
-      .attr("offset", d => `${100*d}%`)
-      .attr("stop-color", d => d3.interpolateInferno(1-d)));
+    gradient
+      .selectAll("stop")
+      .data(d3.ticks(0, 1, 50))
+      .join(enter => enter.append("stop")
+        .attr("offset", d => `${100*d}%`)
+        .attr("stop-color", d => d3.interpolateInferno(1-d)));
 
-  selection.append("g")
-    .attr("class", "colorScale")
-    .attr("transform", `translate(${this.margin.left + this.heatmapWidth + this.heatmapGap}, ${this.margin.top})`)
-    .append("rect")
-    .attr("width", this.heatmapScaleWidth)
-    .attr("height", this.heatmapWidth)
-    .attr("fill", "url(#scaleGrad)");
+    const group = selection.append("g")
+    group
+        .attr("class", "colorScale")
+        .attr("transform", `translate(${this.margin.left + this.heatmapWidth + this.heatmapGap}, ${this.margin.top})`)
+      .append("rect")
+        .attr("width", this.heatmapScaleWidth)
+        .attr("height", this.heatmapWidth)
+        .attr("fill", "url(#scaleGrad)");
+
+    group.call(d3.brushY().on("brush", (e)=> e))
+    const offsetX = this.heatmapScaleWidth;
+    const ticks = d3.ticks(0, 1, 20);
+    group
+      .selectAll("text")
+      .data(ticks)
+      .join(enter => {enter.append("text")
+          .text(d => this._decPipe.transform(d, "1.2-2"))
+          .attr("x", offsetX + 3)
+          .attr("y", d => (1-d) * this.heatmapWidth)
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", 11)
+          .attr("fill", "#000")
+       return enter.append("line")
+          .attr("x1", offsetX - this.heatmapScaleWidth/3)
+          .attr("x2", offsetX + 3)
+          .attr("y1", d => (1-d) * this.heatmapWidth)
+          .attr("y2", d => (1-d) * this.heatmapWidth)
+          .attr("stroke", "#000")
+          .attr("stroke-width", 1)});
+
+
   }
 
   drawAxes(svg, content, X: any[], Y: any[]) {
@@ -85,9 +109,10 @@ export class HeatmapComponent implements OnInit {
         .call(axisTop)
       .selectAll("text")
         .attr("class", "ticks")
-        .attr("text-anchor", "start")
         .attr("dominant-baseline", "hanging")
+        .attr("text-anchor", "start")
         .attr("transform", "translate(5, -10) rotate(-60)")
+        .style("cursor", "pointer")
         .on("click", d => {
           const feature = d3.select(d.srcElement).html();
           this.data = this.data.sort((a, b) => +b[feature] - +a[feature])
@@ -120,29 +145,10 @@ export class HeatmapComponent implements OnInit {
     return [scaleH, scaleV];
   }
 
-  genDomain(sz) {
-    const alpha = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
-    let result = [];
-    for (let i = 0; i < sz; ++i) {
-      let ind = "";
-      for (let k = 0; k < 5; ++k)
-        ind += alpha[Math.floor(Math.random() * alpha.length)];
-        result.push(ind);
-    }
 
-    return result;
-  }
 
   genBlocks(selection, scaleX: any, scaleY: any, previousScaleY: any = null) {
     const t = d3.transition().duration(750).ease(d3.easeLinear);
-    const getId = (code, salt) => {
-      const n = [];
-      for (let i = 0; i < code.length; ++i)
-        n.push(code.charCodeAt(i) * (i+salt));
-
-      const value = d3.sum(n);
-      return value % 255;
-    }
 
     selection
       .selectAll("g")

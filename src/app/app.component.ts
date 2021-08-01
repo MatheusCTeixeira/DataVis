@@ -11,7 +11,10 @@ import { Polarities } from './types/polaritiries';
 export class AppComponent { //                          x        y0       yf
   sexWeek: {keys: string[], colors: string[], values: [string, number, number][][]} = {
     keys: ["Masc.", "Fem.", "Desc."],
-    colors: ["blue", "red", "gray"],
+    colors: [
+      "rgba(12, 12, 226, 0.8)",
+      "rgba(190, 12, 226, 0.8)",
+      "rgba(181, 181, 212, 0.8)"],
     values: []
   }
 

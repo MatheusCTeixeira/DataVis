@@ -8,6 +8,9 @@ import * as d3ToPng from 'd3-svg-to-png';
 import { Margin } from '../types/margin';
 import { Polarities } from '../types/polaritiries';
 
+const p2 = x => Math.pow(x, 2);
+const r2 = x => Math.sqrt(x);
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -102,25 +105,50 @@ export class MapComponent implements OnInit {
           .call((sel) => this.tooltip(sel, week, "weekly")));
 
     // Plot return label
-    this.svg.append("text")
-      .text("← voltar")
-      .attr("class", "backBtn")
-      .attr("x", 15)
-      .attr("y", 15)
-      .style("font-size", 20)
-      .style("cursor", "pointer")
-      .on("click", () => this.smallMultiples());
+    this.addReturnButton(this.svg);
 
-    // Plot current week indicator
+    // Plot title
+    this.addTitle(week);
+  }
+
+  private addReturnButton(selection) {
+      const group = selection.append("g");
+
+      group.append("text")
+        .text("Voltar")
+        .attr("x", 15)
+        .attr("y", 25)
+        .attr("dominant-baseline", "middle")
+        .style("font-size", 15)
+        .style("fill", "red")
+        .style("cursor", "pointer");
+
+        group
+        .each(function() {
+          const dim = this.getBBox();
+          console.log(dim);
+          group.insert("rect", "text")
+            .attr("x", dim.x - 5)
+            .attr("y", dim.y - 5)
+            .attr("width", dim.width + 10)
+            .attr("height", dim.height + 10)
+            .attr("fill", "rgba(241, 16, 9, 0.2)")
+            .attr("stroke", "rgba(247, 13, 4, 0.877)")
+            .attr("stroke-width", 1);
+        })
+      .on("click", () => this.smallMultiples());
+  }
+
+  private addTitle(week: number) {
     let base = new Date(2020, 4, 26);
     const from = base.setDate(base.getDate() + 7 * week);
     base = new Date(2020, 4, 26);
     const to = base.setDate(base.getDate() + 7 * (week + 1));
-    const fromAsString = this.datePipe.transform(from, 'dd/MM')
-    const toAsString = this.datePipe.transform(to, 'dd/MM')
+    const fromAsString = this.datePipe.transform(from, 'dd/MM');
+    const toAsString = this.datePipe.transform(to, 'dd/MM');
     this.svg.append("text")
       .text(`${fromAsString} ─ ${toAsString}`)
-      .attr("x", this.width/2)
+      .attr("x", this.width / 2)
       .attr("y", 15)
       .attr("text-anchor", "middle")
       .style("font-size", 20);
@@ -141,7 +169,7 @@ export class MapComponent implements OnInit {
     return d3.interpolateRdYlGn(0.5 + color);
   }
 
-  plotSmallMultiples(selection, week, [centerX, centerY], [width, height]) {
+  plotSmallMultiples(selection, week, [x, y], [width, height]) {
     this.showingSmallMultiples = true;
 
     const cuiaba: any = [-15.595833, -56.096944];
@@ -149,8 +177,8 @@ export class MapComponent implements OnInit {
     let projection = d3Geo.geoEquirectangular()
       .center(cuiaba)
       .fitExtent([
-        [centerX, centerY],
-        [centerX + width, centerY + height]
+        [x, y],
+        [x + width, y + height]
       ], this.map);
 
     let geoGenerator = d3Geo.geoPath().projection(projection);
@@ -166,6 +194,27 @@ export class MapComponent implements OnInit {
           .attr("fill", (d, i) => this.setColor(d.properties.code, this.data[week])))
       .call((sel) => this.tooltip(sel, week, "summarized"))
       .on("click", (e) => this.plotWeek(week));
+
+    const label = selection.append("g");
+
+    label.append("text")
+      .text(week + 1)
+      .attr("x", x + (2.5/10) * width)
+      .attr("y", y + (5/7) * height)
+      .attr("font-height", 10)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .each(function() {
+        const dim = this.getBBox();
+
+        label.insert("circle", "text")
+          .attr("cx", dim.x + dim.width/2)
+          .attr("cy", dim.y + dim.height/2)
+          .attr("r", 3/5*r2(p2(dim.width) + p2(dim.height)))
+          .attr("fill", "rgb(255, 255, 0)")
+          .attr("stroke", "#000")
+          .attr("stroke-width", 1);
+      })
   }
 
   smallMultiples() {

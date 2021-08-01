@@ -151,7 +151,7 @@ export class BarplotComponent implements OnInit {
       .paddingInner(0.2)
       .round(true);
 
-    const hAxis = d3.axisBottom(hScale);
+    const hAxis = d3.axisBottom(hScale).tickValues(this.domain.filter((_, i) => i % 5 == 0));
 
     selection.append("g")
       .attr("transform", `translate(0, ${vScale(0)})`)
@@ -167,7 +167,7 @@ export class BarplotComponent implements OnInit {
           .attr("width", hScale.bandwidth())
           .attr("y", d => vScale(d[1]))
           .attr("height", d => vScale(0) - vScale(d[1]))
-          .attr("fill", "rgba(0, 0, 255, 0.4)")
+          .attr("fill", "rgba(12, 12, 226, 0.8)")
       );
 
     selection.append("g")
@@ -176,7 +176,7 @@ export class BarplotComponent implements OnInit {
         .attr("x2", hScale("36") + hScale.bandwidth())
         .attr("y1", vScale(100))
         .attr("y2", vScale(100))
-        .attr("stroke", "red");
+        .attr("stroke", "rgba(190, 12, 226, 0.8)");
 
     selection.append("text")
       .attr("x", hScale("15"))
