@@ -1,2 +1,7 @@
-<span id="{{innerId}}"></span>
+<app-load-screen
+    [width]="width"
+    [height]="height"
+    [show]="!display">
+</app-load-screen>
+<span id="{{innerId}}" [ngClass]="{'invisible': display === false}"></span>
 <div id="tooltip"></div>

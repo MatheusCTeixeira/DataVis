@@ -15,9 +15,19 @@ export class HeatmapComponent implements OnInit {
   @Input()
   data: any[] = null;
 
-  width = 950;
-  height = 950;
-  margin: Margin = {left: 60, right: 30, top: 100, bottom: 30};
+  @Input()
+  width;
+
+  @Input()
+  height;
+
+  @Input()
+  margin;
+
+  @Input()
+  show: boolean;
+
+  display: boolean = false;
 
   heatmapWidth = 800;
   heatmapGap = 15;
@@ -26,7 +36,14 @@ export class HeatmapComponent implements OnInit {
   constructor(private _decPipe: DecimalPipe) { }
 
   ngOnInit(): void {
-    setTimeout(() => this.draw(), 500);
+
+  }
+
+  ngOnChanges(changes: any) {
+    const show = changes.show.currentValue;
+
+    if (show === true)
+      this.draw();
   }
 
   draw() {
@@ -48,7 +65,7 @@ export class HeatmapComponent implements OnInit {
     this.genBlocks(content, scaleH, scaleV);
 
     this.drawScaler(svg);
-
+    this.display = true;
   }
 
   drawScaler(selection) {
@@ -94,8 +111,6 @@ export class HeatmapComponent implements OnInit {
           .attr("y2", d => (1-d) * this.heatmapWidth)
           .attr("stroke", "#000")
           .attr("stroke-width", 1)});
-
-
   }
 
   drawAxes(svg, content, X: any[], Y: any[]) {

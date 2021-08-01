@@ -8,7 +8,9 @@ import { Polarities } from './types/polaritiries';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent { //                          x        y0       yf
+export class AppComponent {
+  sexWeekLoaded = false;
+                            //                          x        y0       yf
   sexWeek: {keys: string[], colors: string[], values: [string, number, number][][]} = {
     keys: ["Masc.", "Fem.", "Desc."],
     colors: [
@@ -16,16 +18,23 @@ export class AppComponent { //                          x        y0       yf
       "rgba(190, 12, 226, 0.8)",
       "rgba(181, 181, 212, 0.8)"],
     values: []
-  }
+  };
 
-  tweetsCoords = null;
-  userLocs = null;
-  bots = null;
+
+  tweetsCoords = null; tweetsCoordsLoaded = false;
+  userLocs = null; userLocsLoaded = false;
+  bots = null; botsLoaded = false;
+
+  tweetsCountColor = ["green", "red", "grey"]
+
   tweetsCountsLegend = ["A Favor", "Contra", "Bot"];
   tweetsCounts: [number, number][][] = [[], [], []]; // fav, con, bot
-  tweetsCountColor = ["green", "red", "grey"]
+  tweetsCountsLoaded = false;
+
   tweetsCountsNormLegend = ["A Favor", "Contra", "Bot"];
   tweetsCountsNorm: [number, number][][] = [[], [], []]; // fav, con, bot
+  tweetsCountsNormLoaded = false;
+
   usersCounts: [number, number][][] = [[], [], []]; // fav, con, bot
 
   tweetsByDay: {label?: string, style?: {boxColor?: any}, data: [number, number][]}[] = [
@@ -35,13 +44,15 @@ export class AppComponent { //                          x        y0       yf
     {label: "Qui", style: {boxColor: "black"}, data: []},
     {label: "Sex", style: {boxColor: "black"}, data: []},
     {label: "Sáb", style: {boxColor: "black"}, data: []},
-    {label: "Dom", style: {boxColor: "black"}, data: []}]
-
+    {label: "Dom", style: {boxColor: "black"}, data: []}];
+  tweetsByDayLoaded = false;
 
     // estado, polaridade da semana; a favor vs. contra
-  usersPolarity: Polarities[] = [];
+  usersPolarity: Polarities[] = []; usersPolarityLoaded = false;
 
   coordsAndLocsLoaded = false;
+
+  map: any; mapLoaded: boolean = false;
 
   constructor() {
 
@@ -54,10 +65,12 @@ export class AppComponent { //                          x        y0       yf
     this.loadTweetsCounts();
     this.loadTweetsDays();
     this.loadUsersLocs();
+    this.loadMap();
   }
 
   loadSexWeek() {
-    d3.csv("assets/sex_weeks.csv").then((rows: any[]) => {
+    d3.csv("assets/sex_weeks.csv")
+    .then((rows: any[]) => {
       for (let row of rows) {
         let Yf = d3.cumsum([+row.m, +row.f, +row.unknown]);
         let Y0 = [0, +row.m, +row.f + +row.m];
@@ -68,21 +81,29 @@ export class AppComponent { //                          x        y0       yf
 
         this.sexWeek.values.push(buffer);
       }
-    });
+    })
+    .finally(() => this.sexWeekLoaded = true);
   }
 
   loadCoordsAndLocations() {
-    d3.csv("assets/tweets_coords.csv").then(coords => this.tweetsCoords = coords);
-    d3.csv("assets/tweets_locs.csv").then(locs => this.userLocs = locs);
-    setTimeout(()=> this.coordsAndLocsLoaded = true, 500);
+    d3.csv("assets/tweets_coords.csv")
+      .then(coords => this.tweetsCoords = coords)
+      .finally(() => this.tweetsCoordsLoaded = true);
+
+    d3.csv("assets/tweets_locs.csv")
+      .then(locs => this.userLocs = locs)
+      .finally(() => this.userLocsLoaded = true);
   }
 
   loadBotsHeatmap() {
-    d3.csv("assets/bots_heatmap.csv").then(bots => this.bots = bots);
+    d3.csv("assets/bots_heatmap.csv")
+    .then(bots => this.bots = bots)
+    .finally(() => this.botsLoaded = true);
   }
 
   loadTweetsCounts() {
-    d3.csv("assets/tweets.csv").then(rows => {
+    d3.csv("assets/tweets.csv")
+    .then(rows => {
       for (let row of rows) {
           const week = +row.week;
           this.tweetsCounts[0].push([week, +row.fav]);
@@ -97,11 +118,16 @@ export class AppComponent { //                          x        y0       yf
           this.usersCounts[1].push([week, +row.con_users]);
           this.usersCounts[2].push([week, +row.bot_users]);
       }
+    })
+    .finally(() => {
+      this.tweetsCountsLoaded = true;
+      this.tweetsCountsNormLoaded = true;
     });
   }
 
   loadTweetsDays() {
-    d3.csv("assets/daily_tweets.csv").then(rows => {
+    d3.csv("assets/daily_tweets.csv")
+    .then(rows => {
       for (let row of rows) {
         const week = +row.week;
         this.tweetsByDay[0].data.push([week, +row._0])
@@ -112,7 +138,8 @@ export class AppComponent { //                          x        y0       yf
         this.tweetsByDay[5].data.push([week, +row._5])
         this.tweetsByDay[6].data.push([week, +row._6])
       }
-    });
+    })
+    .finally(()=>this.tweetsByDayLoaded = true);
   }
 
   loadUsersLocs() {
@@ -137,9 +164,16 @@ export class AppComponent { //                          x        y0       yf
         for (const key in row)
           this.usersPolarity[week - 1][key][1] = +row[key]
 
-    }});
+    }})
+    .finally(() => setTimeout(() => this.usersPolarityLoaded = true, 2000));
+  }
 
-    console.log(this.usersPolarity);
+  loadMap() {
+    d3.json("assets/brazil_map.geojson")
+    .then((data: any) => {
+      this.map = data;
+    })
+    .finally(() => this.mapLoaded = true);
   }
 
 

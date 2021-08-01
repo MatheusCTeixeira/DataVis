@@ -22,6 +22,8 @@ import { DEFAULT_CURRENCY_CODE} from '@angular/core';
 import localePt from '@angular/common/locales/pt';
 import { HeatmapComponent } from './heatmap/heatmap.component';
 import { TermiteVisComponent } from './termite-vis/termite-vis.component';
+import { LoadScreenComponent } from './load-screen/load-screen.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 registerLocaleData(localePt, 'pt');
 
@@ -37,6 +39,7 @@ registerLocaleData(localePt, 'pt');
     BoxplotComponent,
     HeatmapComponent,
     TermiteVisComponent,
+    LoadScreenComponent,
   ],
   imports: [
     BrowserModule,
@@ -46,7 +49,8 @@ registerLocaleData(localePt, 'pt');
     MatButtonModule,
     MatToolbarModule,
     MatIconModule,
-    MatSelectModule
+    MatSelectModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     DecimalPipe,

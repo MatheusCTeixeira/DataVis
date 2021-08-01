@@ -43,20 +43,30 @@ export class LineplotComponent implements OnInit {
   @Input()
   color: string[]
 
-  constructor(private decimalPipe: DecimalPipe) { }
+  @Input()
+  show: boolean = false;
+
+  display: boolean = false;
+
+  constructor() { }
 
   ngOnInit() {
-    setTimeout(() => this.plot(), 500);
   }
 
-  plot(): void {
+  ngOnChanges(changes) {
+    const show = changes.show?.currentValue;
+
+    if (show === true)
+      this.draw();
+  }
+
+  draw(): void {
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
       .append("g");
 
-      console.log("margim", this.margin);
     const hScale = d3Scale.scaleLinear()
       .domain([1, 36])
       .range([this.margin.left, this.width - this.margin.right]);
@@ -85,7 +95,7 @@ export class LineplotComponent implements OnInit {
     svg
     .append("g")
       .selectAll("path")
-      .data(this.data)
+      .data(this.data.map(d => d), (_, i) => i)
       .join(enter => {
           const path = enter.append("path")
             .attr("fill", "none")
@@ -126,6 +136,8 @@ export class LineplotComponent implements OnInit {
       this.addLegend(svg);
       this.addXLabel(svg);
       this.addYLabel(svg);
+
+      this.display = true;
   }
 
   addLegend(selection) {

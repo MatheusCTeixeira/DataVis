@@ -53,6 +53,11 @@ export class BarplotComponent implements OnInit {
   @Input()
   axisY: string;
 
+  @Input()
+  show: boolean = false;
+
+  display: boolean = false;
+
   stackValues: number[];
 
   maxValue = 0;
@@ -60,10 +65,17 @@ export class BarplotComponent implements OnInit {
   constructor(private decimalPipe: DecimalPipe) { }
 
   ngOnInit(): void {
-    setTimeout(() => this.plot(), 500);
+
   }
 
-  plot() {
+  ngOnChanges(changes) {
+    const show = changes.show?.currentValue;
+
+    if (show === true)
+      this.draw();
+  }
+
+  draw() {
     this.maxValue = d3.max(this.data.values.map(v => v[v.length -1][2]));
     this.domain = this.data.values.map(bars => bars.map(bar => bar[0])[0]);
 
@@ -102,6 +114,7 @@ export class BarplotComponent implements OnInit {
 
     this.drawDiff(svg, this.width/2, 0, this.width/2, this.height/3)
 
+    this.display = true;
   }
 
   drawBars(selection, vScale, hScale) {

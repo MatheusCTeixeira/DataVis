@@ -32,13 +32,19 @@ export class BoxplotComponent implements OnInit {
   @Input()
   margin: Margin;
 
+  @Input()
+  boxWidth: number;
+
+  @Input()
+  show: boolean = false;
+
+  display: boolean = false;
+
   svg = null;
 
   CH: number; // Client Height
   CW: number; // CLient Width
 
-  @Input()
-  boxWidth: number;
 
   mBW: number = 10;
 
@@ -78,7 +84,13 @@ export class BoxplotComponent implements OnInit {
 
   ngOnInit(): void {
     this.mBW = this.boxWidth/2;
-    setTimeout(() => this.draw(), 500);
+  }
+
+  ngOnChanges(changes) {
+    const show = changes.show?.currentValue;
+
+    if (show === true)
+      this.draw();
   }
 
   draw() {
@@ -134,6 +146,8 @@ export class BoxplotComponent implements OnInit {
       .attr("d", d => f(d));
 
     this.addLegend(svg);
+
+    this.display = true;
   }
 
   addLegend(selection) {

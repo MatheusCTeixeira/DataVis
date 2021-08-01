@@ -43,7 +43,14 @@
 
     <section id="bots">
       <h2>Bots</h2>
-      <app-heatmap innerId="heatmap-bot" [data]="bots"></app-heatmap>
+      <app-heatmap
+        [width]="950"
+        [height]="950"
+        [margin]="{left: 60, right: 30, top: 100, bottom: 30}"
+        innerId="heatmap-bot"
+        [show]="botsLoaded"
+        [data]="bots">
+      </app-heatmap>
     </section>
 
     <section id="polarizacao">
@@ -73,6 +80,7 @@
         [width]="450"
         [height]="300"
         [margin]="{bottom: 35, top: 35, left: 45, right: 10}"
+        [show]="tweetsCountsLoaded"
         innerId="fig_1">
       </app-lineplot>
 
@@ -86,6 +94,7 @@
         [width]="450"
         [height]="300"
         [margin]="{bottom: 35, top: 35, left: 40, right: 10}"
+        [show]="tweetsCountsNormLoaded"
         innerId="fig_2">
       </app-lineplot>
       </div>
@@ -105,9 +114,8 @@
       <div style="display:flex; justify-content: space-around;">
 
         <app-radarplot
-          [width]="400"
-          [height]="300"
-          >
+          [width]="450"
+          [height]="300">
         </app-radarplot>
 
         <app-boxplot
@@ -118,6 +126,7 @@
           [rangeY]="[8, 20]"
           [boxWidth]="20"
           [data]="tweetsByDay"
+          [show]="tweetsByDayLoaded"
           [margin]="{top: 20, bottom: 30, left: 55, right: 30}">
         </app-boxplot>
 
@@ -142,6 +151,7 @@
           [rangeY]="[1, 8E6]"
           [stacked]="true"
           [data]="sexWeek"
+          [show]="sexWeekLoaded"
           axisX="Semana"
           axisY="# tweets"
           >
@@ -159,13 +169,14 @@
         ou seja, o mapa <code>(i, j)</code> representa a semana X e o mapa
         <code>(i, j+1)</code> representa a semana X + 1.
       </p>
-      <ng-container *ngIf="coordsAndLocsLoaded == true">
-        <app-map
-          [tweetCoords]="tweetsCoords"
-          [userLocations]="userLocs"
-          [data]="usersPolarity">
-        </app-map>
-      </ng-container>
+
+      <app-map
+        [tweetCoords]="tweetsCoords"
+        [userLocations]="userLocs"
+        [data]="usersPolarity"
+        [map]="map"
+        [show]="usersPolarityLoaded && tweetsCoords && userLocsLoaded && mapLoaded">
+      </app-map>
 
       <h4>Análise de Tópicos</h4>
       <app-termite-vis innerId="termite"></app-termite-vis>

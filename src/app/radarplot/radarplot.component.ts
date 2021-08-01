@@ -16,8 +16,8 @@ export class RadarplotComponent implements OnInit {
   median: number[] = [];
   mean: number[] = [];
 
-  @Input() width = 400;
-  @Input() height = 400;
+  @Input() width;
+  @Input() height;
 
   margin = 30;
 

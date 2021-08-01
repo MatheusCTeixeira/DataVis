@@ -20,7 +20,7 @@ export class MapComponent implements OnInit {
   svg = null;
   weeks: any;
   weeks_no: any[];
-  map: any;
+
   week_selected = new FormControl(1);
   height = 900;
   width = 900;
@@ -39,11 +39,31 @@ export class MapComponent implements OnInit {
   @Input()
   userLocations;
 
+  @Input()
+  map: any;
+
+  @Input()
+  show: boolean;
+
+  display: boolean = false;
+
   constructor(
     private datePipe: DatePipe,
     private decPipe: DecimalPipe) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
+
+  }
+
+  ngOnChanges(changes: any) {
+    const show = changes.show?.currentValue;
+
+    if (show === true)
+      this.draw();
+
+  }
+
+  draw(): void {
     this.svg = d3.select("#map")
       .append("svg")
       .attr("width", this.width)
@@ -61,13 +81,12 @@ export class MapComponent implements OnInit {
       this.maxValue += maxValue;
     })
 
-    d3.json("assets/brazil_map.geojson").then((data: any) => {
-      this.map = data;
-      setTimeout(() => { this.smallMultiples() }, 500);
-    });
-
     this.weeks_no = d3.range(1, 36 + 1, 1);
     this.maxValue = d3.max(this.data.map(v => d3.max(Object.values(v).map(v => Math.abs(v[0] - v[1])))).map(v => v));
+
+    this.smallMultiples();
+
+    this.display = true;
   }
 
   plotWeek(week: number) {
