@@ -113,7 +113,6 @@ export class RadarplotComponent implements OnInit {
           .attr("text-anchor", "middle")
           .attr("transform", (d, i) => `translate(${CX + r(1.05) * sin(i)}, ${CY - r(1.05) * cos(i)}) rotate(${360 * i / 7})`)
           .text((_, i) => this.header[i])
-
     });
 
     svg
@@ -134,7 +133,7 @@ export class RadarplotComponent implements OnInit {
 
     const factory = d3.lineRadial()
       .angle((d, i) => 2 * PI * i / 7)
-      .radius((d, i) => RD * d[1])
+      .radius((d, i) => r(1) * d[1])
       .curve(d3.curveCardinalClosed);
 
     const statistics = [this.mean, this.median];

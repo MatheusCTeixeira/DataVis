@@ -145,7 +145,7 @@ export class MapComponent implements OnInit {
         group
         .each(function() {
           const dim = this.getBBox();
-          console.log(dim);
+
           group.insert("rect", "text")
             .attr("x", dim.x - 5)
             .attr("y", dim.y - 5)

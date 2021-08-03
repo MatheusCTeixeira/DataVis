@@ -215,7 +215,6 @@ export class BarplotComponent implements OnInit {
       <div style="align-self: center;">ESTATÍSTICAS</div>
       <div>Semana: ${i}</div>`
 
-      console.log(i);
       const values = this.data.values.filter(v => v[0][0] === i)[0];
       const total = values[values.length - 1][2];
 

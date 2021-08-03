@@ -15,6 +15,8 @@ export class HeatmapComponent implements OnInit {
   @Input()
   data: any[] = null;
 
+  preprocessed_data: [number, [string, number, number][]][] = null;
+
   @Input()
   width;
 
@@ -26,6 +28,9 @@ export class HeatmapComponent implements OnInit {
 
   @Input()
   show: boolean;
+
+  // Used as a reference to animation
+  previousScale = null;
 
   display: boolean = false;
 
@@ -46,16 +51,33 @@ export class HeatmapComponent implements OnInit {
       this.draw();
   }
 
+  preprocess() {
+    this.preprocessed_data = [];
+
+    for (let row of this.data) {
+      const features: [string, number, number][] = [];
+      const group = +row.group;
+      delete row.group;
+
+      for (let cell in row) {
+        features.push(<[string, number, number]>[cell, group, +row[cell]]);
+      }
+
+      this.preprocessed_data.push([group, features]);
+    }
+  }
+
   draw() {
+    let X = Object.keys(this.data[0]).filter(key => key != "group");
+    let Y = this.data.map(row => +row.group)
+
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
       .append("g");
 
-
-    let X = Object.keys(this.data[0]).filter(key => key != "group");
-    let Y = this.data.map(row => +row.group)
+    this.preprocess();
 
     const content = svg
         .append("g")
@@ -82,7 +104,8 @@ export class HeatmapComponent implements OnInit {
         .attr("offset", d => `${100*d}%`)
         .attr("stop-color", d => d3.interpolateInferno(1-d)));
 
-    const group = selection.append("g")
+    const group = selection.append("g");
+
     group
         .attr("class", "colorScale")
         .attr("transform", `translate(${this.margin.left + this.heatmapWidth + this.heatmapGap}, ${this.margin.top})`)
@@ -91,11 +114,17 @@ export class HeatmapComponent implements OnInit {
         .attr("height", this.heatmapWidth)
         .attr("fill", "url(#scaleGrad)");
 
-    group.call(d3.brushY().on("brush", (e)=> e))
+    // Ativa o brush
+    group.call(d3.brushY()
+      .extent([[0, 0], [this.heatmapScaleWidth, this.heatmapWidth]])
+      .on("end", (e)=> this.highlight(selection, e)));
+
+
+
     const offsetX = this.heatmapScaleWidth;
     const ticks = d3.ticks(0, 1, 20);
-    group
-      .selectAll("text")
+    // Desenha os ticks
+    group.selectAll("text")
       .data(ticks)
       .join(enter => {enter.append("text")
           .text(d => this._decPipe.transform(d, "1.2-2"))
@@ -130,27 +159,23 @@ export class HeatmapComponent implements OnInit {
         .style("cursor", "pointer")
         .on("click", d => {
           const feature = d3.select(d.srcElement).html();
-          this.data = this.data.sort((a, b) => +b[feature] - +a[feature])
+          this.sortByFeature(feature);
 
-          const prevScaleV = scaleV;
-          Y = this.data.map(row => +row.group)
+          this.previousScale = scaleV;
+          Y = this.preprocessed_data.map(row => row[0])
           const vRange = [this.margin.top, this.margin.top + this.heatmapWidth];
+
           const newScaleV = d3.scaleBand(Y, vRange).round(true);
-          const axisLeft = d3.axisLeft(newScaleV)
-                              .tickValues(
-                                newScaleV.domain()
-                                  .filter((d, i) =>
-                                    i % (Math.round(newScaleV.domain().length/10)) == 0));
+          const axisLeft = this.nTicks(d3.axisLeft(scaleV), Y, 15);
 
           svg.select("g.axisV").call(axisLeft);
 
-          this.genBlocks(content, scaleH, newScaleV, prevScaleV);
+          this.genBlocks(content, scaleH, newScaleV, this.previousScale);
         });
 
     const vRange = [this.margin.top, this.margin.top + this.heatmapWidth];
     const scaleV = d3.scaleBand(Y, vRange).padding(0).round(true);
-    const axisLeft = d3.axisLeft(scaleV)
-      .tickValues(scaleV.domain().filter((d, i) => i % (Math.round(scaleV.domain().length/10)) == 0));
+    const axisLeft = this.nTicks(d3.axisLeft(scaleV), Y, 15);
 
     svg.append("g")
       .attr("class", "axisV")
@@ -160,31 +185,73 @@ export class HeatmapComponent implements OnInit {
     return [scaleH, scaleV];
   }
 
+  private nTicks(axis: d3.Axis<any>, domain: number[], n: number) {
+    const step = Math.round(domain.length / n);
+    axis.tickValues(domain.filter((_, i) => i % step === 0));
+    return axis;
+  }
+
+  private sortByFeature(feature: string) {
+    const feature_idx = this.preprocessed_data[0][1]
+            .findIndex(v => v[0] === feature);
+
+    this.preprocessed_data = this.preprocessed_data.sort(function (l,r) {
+      const lGroup = l[1][feature_idx][2];
+      const rGroup = r[1][feature_idx][2];
+      return rGroup - lGroup;
+    });
+  }
 
 
-  genBlocks(selection, scaleX: any, scaleY: any, previousScaleY: any = null) {
+
+  genBlocks(selection, scaleX: any, scaleY: any, previousScaleY: any = null, threshold: [number, number]=null) {
     const t = d3.transition().duration(750).ease(d3.easeLinear);
 
     selection
-      .selectAll("g")
-      .data(this.data, d => +d.group)
+      .selectAll("g.row")
+      .data(this.preprocessed_data, d => d[0]) // key é o id do grupo, ie, a row
       .join(
         enter => enter
             .append("g")
               .attr("class", "row")
             .selectAll("rect")
-            .data(d => d3.cross([+d.group], Object.entries(d).filter(pair => pair[0] != "group")))
+            .data((d:[number, [string, number, number][]]) => d[1])
             .join(enter => enter.append("rect")
-              .attr("y", d => {return scaleY(d[0]);})
-              .attr("x", d => scaleX(d[1][0]))
+              .attr("x", d => scaleX(d[0]))
+              .attr("y", d => scaleY(d[1]))
               .attr("width", scaleX.bandwidth())
               .attr("height", scaleY.bandwidth())
-              .attr("fill", (d, i) => d3.interpolateInferno(+d[1][1]))),
+              .attr("fill", (d, i) => d3.interpolateInferno(+d[2]))),
         update => update
               .attr("transform", d => "translate(0, 0)")
             .transition(t)
-              .attr("transform", d => `translate(0, ${scaleY(+d.group) - previousScaleY(+d.group)})`)
+              .attr("transform", d => {console.log(scaleY(d[0]) - previousScaleY(d[0])); return `translate(0, ${scaleY(d[0]) - previousScaleY(d[0])})`})
       );
   }
 
+  highlight(selection, e) {
+    let threshold: [number, number];
+    if (!e.selection) {
+      threshold = [-1, 1];
+    } else {
+      threshold = e.selection
+      .map(v => (this.heatmapWidth - v)/ this.heatmapWidth)
+      .sort();
+    }
+
+    const between = (x) => threshold[0] <= x && x <= threshold[1];
+
+    selection
+      .selectAll("g.row")
+      .data(this.preprocessed_data, d => d[0]) // key é o id do grupo, ie, a row
+      .join(null,
+        update => update
+        .selectAll("rect")
+        .data((d:[number, [string, number, number][]]) => d[1])
+        .join(null,
+          update => update.attr("fill", function (d) {
+            const x = d[2];
+            return between(x) ? d3.interpolateInferno(+d[2]) : "black";
+          })));
+  }
 }
