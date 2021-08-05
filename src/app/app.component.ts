@@ -54,6 +54,9 @@ export class AppComponent {
 
   map: any; mapLoaded: boolean = false;
 
+  topics: any;
+  topicsLoaded: boolean = false;
+
   constructor() {
 
   }
@@ -66,6 +69,8 @@ export class AppComponent {
     this.loadTweetsDays();
     this.loadUsersLocs();
     this.loadMap();
+    this.loadTopics();
+    console.log(this.topics);
   }
 
   loadSexWeek() {
@@ -174,6 +179,14 @@ export class AppComponent {
       this.map = data;
     })
     .finally(() => this.mapLoaded = true);
+  }
+
+  loadTopics() {
+    d3.json("assets/topics.json")
+    .then(topics => {
+      this.topics = topics;
+    })
+    .finally(() => this.topicsLoaded = true);
   }
 
 

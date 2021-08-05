@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
+import { Margin } from '../types/margin';
 
 @Component({
   selector: 'app-termite-vis',
@@ -10,48 +11,118 @@ export class TermiteVisComponent implements OnInit {
   @Input()
   innerId: string;
 
+  @Input()
+  width;
+
+  @Input()
+  height;
+
+  @Input()
+  data;
+
+  @Input()
+  show;
+
+  @Input()
+  margin: Margin;
+
+  @Input()
+  barLeftGap: number;
+
+  @Input()
+  barWidth: number;
+
+  @Input()
+  barMaxLenth: number;
+
+  @Input()
+  barLegendGap: number;
+
+  display: boolean = false;
+
+  weeks: number[];
+
+  week: number;
+
+  vDomain: string[];
+
+  hDomain: string[];
+
+  accumulated: d3.InternMap<string, number>;
+
+
   constructor() { }
 
   ngOnInit(): void {
-    setTimeout(() => this.draw(), 200);
+  }
+
+  ngOnChanges(changes) {
+    const show = changes.show.currentValue;
+
+    if (show) {
+      this.draw();
+    }
+  }
+
+  preprocess(week = 9) {
+    this.weeks = Object.keys(this.data).map(v => +v);
+    this.hDomain = Object.keys(this.data[week]);
+    this.vDomain = Array.from(new Set(d3.merge(Object.values(this.data[week]).map(v => Object.keys(v)))));
+
+    this.accumulated = new d3.InternMap<string, number>();
+    for (let topic_id in <any>this.data[week]) {
+      const topic = this.data[week][topic_id];
+
+      for (let word in <any>topic) {
+        if (!this.accumulated.hasOwnProperty(word))
+          this.accumulated[word] = 0;
+
+          this.accumulated[word] += topic[word];
+      }
+    }
+
+    const max = <number>d3.max(Object.values(this.accumulated));
+    for (let attr in this.accumulated)
+      this.accumulated[attr] /= max;
   }
 
   draw() {
     const svg = d3.select(`div#${this.innerId}`)
       .append("svg")
-        .attr("width", 900)
-        .attr("height", 900)
+        .attr("width", this.width)
+        .attr("height", this.height)
       .append("g");
 
-    const vDomain = this.genDomain(30);
-    const hDomain = this.genDomain(20);
-    const [vScale, hScale] = this.drawAxes(svg, vDomain, hDomain);
+    this.preprocess();
+    const [vScale, hScale] = this.drawAxes(svg, this.vDomain, this.hDomain);
 
-    this.drawGrid(svg, vDomain, hDomain, vScale, hScale);
+    this.drawGrid(svg, this.vDomain, this.hDomain, vScale, hScale);
 
-    const wordWeight = vDomain.map(word => [word, 25 * Math.random()]);
-    this.drawBars(svg, wordWeight, vDomain, vScale);
+    const wordWeight = this.vDomain.map(word => [word, this.accumulated[word]]);
+    this.drawBars(svg, wordWeight, this.vDomain, vScale);
 
-    const content = d3.merge(hDomain.map(topic => vDomain.map(word => [topic, word, 100 * Math.random()])));
+    const content = d3.merge(this.hDomain.map(topic => this.vDomain.map(word => [topic, word, 100 * Math.random()])));
     this.drawContent(svg, content, vScale, hScale);
+
+    this.display = true;
   }
 
   drawAxes(selection, vDomain: any[], hDomain: any[]) {
-    const vScale = d3.scalePoint(vDomain, [800, 30]).padding(0.3);
+    const vScale = d3.scalePoint(vDomain, [this.margin.top, this.height - this.margin.bottom]).padding(0.3);
     const vAxis = d3.axisLeft(vScale);
 
     selection.append("g")
       .attr("class", "vAxis")
-      .attr("transform", `translate(60, 0)`)
+      .attr("transform", `translate(${this.margin.left}, 0)`)
       .call(vAxis);
 
 
-    const hScale = d3.scalePoint(hDomain, [60, 800]).padding(0.3);
+    const hScale = d3.scalePoint(hDomain, [this.margin.left, this.width - this.margin.right]).padding(0.3);
     const hAxis = d3.axisTop(hScale);
 
     selection.append("g")
         .attr("class", "hAxis")
-        .attr("transform", `translate(0, 30)`)
+        .attr("transform", `translate(0, ${this.margin.top})`)
         .call(hAxis)
       .selectAll("text")
         .attr("text-anchor", "start")
@@ -71,9 +142,9 @@ export class TermiteVisComponent implements OnInit {
       .join(
         enter => enter.append("line")
           .attr("class", "hLineGrid")
-          .attr("x1", d => 60)
+          .attr("x1", d => this.margin.left)
           .attr("y1", d => vScale(d))
-          .attr("x2", d => 800)
+          .attr("x2", d => this.width - this.margin.right)
           .attr("y2", d => vScale(d))
           .attr("stroke", "rgba(0,0,0,0.3)"));
 
@@ -84,21 +155,19 @@ export class TermiteVisComponent implements OnInit {
         enter => enter.append("line")
           .attr("class", "vLineGrid")
           .attr("x1", d => hScale(d))
-          .attr("y1", d => 30)
+          .attr("y1", d => this.margin.top)
           .attr("x2", d => hScale(d))
-          .attr("y2", d => 800)
+          .attr("y2", d => this.height - this.margin.bottom)
           .attr("stroke", "rgba(0,0,0,0.3)"));
   }
 
   drawBars(selection, wordWeight, vDomain, vScale) {
     const barplot = selection.append("g")
       .attr("class", "boxPlot")
-      .attr("transform", `translate(${800 + 20}, 0)`);
-
-    const barWidth = 15;
+      .attr("transform", `translate(${this.width - this.margin.right + this.barLeftGap}, 0)`);
 
     // Ordena as palavras do tópico de acordo com a frequência
-    wordWeight = wordWeight.sort((l, r) => l[1] - r[1]);
+    wordWeight = wordWeight.sort((l, r) => r[1] - l[1]);
 
     // Zip com o domain para exibir os resultados alinhados com o eixo.
     const formatted = d3.zip(wordWeight, vDomain);
@@ -107,25 +176,29 @@ export class TermiteVisComponent implements OnInit {
       .data(formatted)
       .join(enter => {
         enter.append("rect")
-          .attr("x", 0)
-          .attr("y", (d, i) => vScale(d[1]) - barWidth / 2)
-          .attr("height", barWidth)
-          .attr("rx", 0.2 *barWidth)
-          .attr("width", (d, i) => 0)
-          .attr("fill", d => d3.interpolateReds(0))
+            .attr("x", 0)
+            .attr("y", (d, i) => vScale(d[1]) - this.barWidth / 2)
+            .attr("height", this.barWidth)
+            .attr("rx", 0.2 * this.barWidth)
+            .attr("width", (d, i) => 0)
+            .attr("fill", _ => d3.interpolateReds(0))
           .transition()
-          .duration(5000)
-          .ease(d3.easeLinear)
-          .attr("width", (d, i) => d3.max([d[0][1], 1]))
-          .attr("fill", d => d3.interpolateReds(d[0][1]/8));
+            .duration(5000)
+            .ease(d3.easeLinear)
+            .attr("width", (d, i) => d[0][1] * this.barMaxLenth)
+            .attr("fill", d => d3.interpolateReds(d[0][1]));
 
         enter.append("text")
           .attr("dominant-baseline", "middle")
           .attr("x", 0)
-          .attr("y", (d, i) => vScale(d[1]))
-          .attr("dx", (d, i) => i + 3)
-          .attr("font-size", 0.7*barWidth)
-          .html(d => d[0][0]);
+          .attr("y", d => vScale(d[1]))
+          .attr("dx", 0)
+          .attr("font-size", 0.7* this.barWidth)
+          .html(d => d[0][0])
+          .transition()
+          .duration(5000)
+          .ease(d3.easeLinear)
+          .attr("dx", d => d[0][1] * this.barMaxLenth + this.barLegendGap)
       });
   }
 

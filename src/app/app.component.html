@@ -179,7 +179,18 @@
       </app-map>
 
       <h4>Análise de Tópicos</h4>
-      <app-termite-vis innerId="termite"></app-termite-vis>
+      <app-termite-vis
+        innerId="termite"
+        [data]="topics"
+        [width]="900"
+        [height]="1800"
+        [margin]="{left: 120, right: 120, top: 30, bottom: 30}"
+        [barLeftGap]="10"
+        [barWidth]="15"
+        [barMaxLenth]="30"
+        [barLegendGap]="5"
+        [show]="topicsLoaded">
+      </app-termite-vis>
     </section>
 
 
