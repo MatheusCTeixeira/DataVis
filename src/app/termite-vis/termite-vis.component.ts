@@ -96,6 +96,8 @@ export class TermiteVisComponent implements OnInit {
     this.preprocess();
     const [vScale, hScale] = this.drawAxes(svg, this.vDomain, this.hDomain);
 
+    this.drawWeeks(svg);
+
     this.drawGrid(svg, this.vDomain, this.hDomain, vScale, hScale);
 
     const wordWeight = this.vDomain.map(word => [word, this.accumulated[word]]);
@@ -105,6 +107,35 @@ export class TermiteVisComponent implements OnInit {
     this.drawContent(svg, content, vScale, hScale);
 
     this.display = true;
+  }
+
+  drawWeeks(selection) {
+    const weeksRadius = 10;
+    const weekPadding = 3;
+
+    selection.append("g")
+      .attr("transform", `translate(${this.margin.left/2}, 0)`)
+      .classed("weekOptions", true)
+      .selectAll("circle")
+      .data(this.weeks)
+      .join(enter => {
+        enter.append("circle")
+          .attr("r", weeksRadius)
+          .attr("fill", "yellow")
+          .attr("cx", (_, i) => (2 * weeksRadius + weekPadding) * i)
+          .attr("cy", 40)
+          .attr("stroke", "black")
+          .style("cursor", "pointer");
+
+        return enter.append("text")
+          .text(d => d)
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", 8)
+          .attr("x", (_, i) => (2 * weeksRadius + weekPadding) * i)
+          .attr("y", 40)
+          .style("cursor", "pointer");
+      });
   }
 
   drawAxes(selection, vDomain: any[], hDomain: any[]) {
