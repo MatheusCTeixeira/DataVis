@@ -19,6 +19,7 @@ export class TermiteVisComponent implements OnInit {
 
   @Input()
   data;
+  _data;
 
   @Input()
   show;
@@ -38,9 +39,15 @@ export class TermiteVisComponent implements OnInit {
   @Input()
   barLegendGap: number;
 
+  @Input()
+  weeksRadius;
+
+  @Input()
+  weekPadding;
+
   display: boolean = false;
 
-  weeks: number[];
+  weeks: [number, boolean][];
 
   week: number;
 
@@ -64,11 +71,13 @@ export class TermiteVisComponent implements OnInit {
     }
   }
 
-  preprocess(week = 9) {
-    this.weeks = Object.keys(this.data).map(v => +v);
+  preprocess(week) {
+    this.weeks = Object.keys(this.data).map(v => [+v, this.data[v] != null]);
+    console.log(this.weeks);
     this.hDomain = Object.keys(this.data[week]);
     this.vDomain = Array.from(new Set(d3.merge(Object.values(this.data[week]).map(v => Object.keys(v)))));
 
+    let maxOfWeek = 0;
     this.accumulated = new d3.InternMap<string, number>();
     for (let topic_id in <any>this.data[week]) {
       const topic = this.data[week][topic_id];
@@ -77,69 +86,100 @@ export class TermiteVisComponent implements OnInit {
         if (!this.accumulated.hasOwnProperty(word))
           this.accumulated[word] = 0;
 
-          this.accumulated[word] += topic[word];
+        this.accumulated[word] += topic[word];
+        maxOfWeek = d3.max([topic[word], maxOfWeek]);
       }
     }
 
     const max = <number>d3.max(Object.values(this.accumulated));
+
     for (let attr in this.accumulated)
       this.accumulated[attr] /= max;
+
+    this._data = d3.cross(this.hDomain, this.vDomain)
+      .map(X => [X[0], X[1], this.data[week][X[0]][X[1]]  != null ? this.data[week][X[0]][X[1]]/ maxOfWeek : 0]);
   }
 
-  draw() {
-    const svg = d3.select(`div#${this.innerId}`)
+  clear() {
+    d3.select(`div#${this.innerId}-weeks`).selectAll("*").remove();
+    d3.select(`div#${this.innerId}-content`).selectAll("*").remove();
+  }
+
+  draw(week = 1) {
+    this.week = week;
+    this.clear();
+
+    this.preprocess(week);
+
+    const svg = d3.select(`div#${this.innerId}-content`)
       .append("svg")
         .attr("width", this.width)
         .attr("height", this.height)
       .append("g");
 
-    this.preprocess();
     const [vScale, hScale] = this.drawAxes(svg, this.vDomain, this.hDomain);
 
-    this.drawWeeks(svg);
+    this.drawWeeks();
 
     this.drawGrid(svg, this.vDomain, this.hDomain, vScale, hScale);
 
     const wordWeight = this.vDomain.map(word => [word, this.accumulated[word]]);
     this.drawBars(svg, wordWeight, this.vDomain, vScale);
 
-    const content = d3.merge(this.hDomain.map(topic => this.vDomain.map(word => [topic, word, 100 * Math.random()])));
-    this.drawContent(svg, content, vScale, hScale);
+    // const content = d3.merge(this.hDomain.map(topic => this.vDomain.map(word => [topic, word, 100 * Math.random()])));
+    this.drawContent(svg, this._data, vScale, hScale);
 
     this.display = true;
   }
 
-  drawWeeks(selection) {
-    const weeksRadius = 10;
-    const weekPadding = 3;
+  drawWeeks() {
+    const self = this;
+    const diameter = 2 * this.weeksRadius;
+    const svg = d3.select(`div#${this.innerId}-weeks`)
+      .append("svg")
+      .attr("width", this.width)
+      .attr("height", 50);
 
-    selection.append("g")
+    const handler = function (d, i) {
+      const sel = d3.select(this);
+
+      if (d[1])
+        sel.on("click", (_, week) => self.draw(week[0]))
+          .style("cursor", "pointer");
+      else
+        sel.style("cursor", "not-allowed")
+          .style("opacity", 0.3);
+    }
+
+    svg.append("g")
       .attr("transform", `translate(${this.margin.left/2}, 0)`)
       .classed("weekOptions", true)
       .selectAll("circle")
       .data(this.weeks)
       .join(enter => {
         enter.append("circle")
-          .attr("r", weeksRadius)
-          .attr("fill", "yellow")
-          .attr("cx", (_, i) => (2 * weeksRadius + weekPadding) * i)
-          .attr("cy", 40)
+          .attr("r", this.weeksRadius)
+          .attr("fill", d => d[1] ? "yellow" : "gray")
+          .attr("cx", (_, i) => (diameter + this.weekPadding) * i)
+          .attr("cy", 25)
           .attr("stroke", "black")
-          .style("cursor", "pointer");
+          .style("opacity", d => this.week == d[0] ? 1 : 0.4)
+          .each(handler);
 
         return enter.append("text")
-          .text(d => d)
+          .text(d => d[0])
           .attr("text-anchor", "middle")
           .attr("dominant-baseline", "middle")
           .attr("font-size", 8)
-          .attr("x", (_, i) => (2 * weeksRadius + weekPadding) * i)
-          .attr("y", 40)
-          .style("cursor", "pointer");
+          .attr("x", (_, i) => (diameter + this.weekPadding) * i)
+          .attr("y", 25)
+          .each(handler);
+
       });
   }
 
   drawAxes(selection, vDomain: any[], hDomain: any[]) {
-    const vScale = d3.scalePoint(vDomain, [this.margin.top, this.height - this.margin.bottom]).padding(0.3);
+    const vScale = d3.scalePoint(vDomain, [this.margin.top + 2 * 20, this.height - this.margin.bottom]).padding(0.3);
     const vAxis = d3.axisLeft(vScale);
 
     selection.append("g")
@@ -153,7 +193,7 @@ export class TermiteVisComponent implements OnInit {
 
     selection.append("g")
         .attr("class", "hAxis")
-        .attr("transform", `translate(0, ${this.margin.top})`)
+        .attr("transform", `translate(0, ${this.margin.top + 2 * 20})`)
         .call(hAxis)
       .selectAll("text")
         .attr("text-anchor", "start")
@@ -186,7 +226,7 @@ export class TermiteVisComponent implements OnInit {
         enter => enter.append("line")
           .attr("class", "vLineGrid")
           .attr("x1", d => hScale(d))
-          .attr("y1", d => this.margin.top)
+          .attr("y1", d => this.margin.top + 2 * 20)
           .attr("x2", d => hScale(d))
           .attr("y2", d => this.height - this.margin.bottom)
           .attr("stroke", "rgba(0,0,0,0.3)"));
@@ -241,33 +281,20 @@ export class TermiteVisComponent implements OnInit {
       .data(content)
       .join(enter =>
         enter.append("circle")
-          .attr("cx", d => hScale(d[0]))
-          .attr("cy", d => vScale(d[1]))
-          .attr("r", 0)
-          .attr("fill", d => d3.interpolateReds(0))
-          .attr("stroke", "black")
-          .call(this.tooltip)
+            .attr("cx", d => hScale(d[0]))
+            .attr("cy", d => vScale(d[1]))
+            .attr("r", 0)
+            .attr("fill", d => d3.interpolateReds(0))
+            .attr("stroke", "black")
+            .call(this.tooltip)
           .transition()
-          .duration(5000)
-          .ease(d3.easeLinear)
-          .attr("fill", d => d3.interpolateReds(Math.random()))
-          .attr("r", d => Math.sqrt(100 * Math.random()))
-          )
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .attr("fill", d => d3.interpolateReds(d[2]))
+            .attr("r", d => Math.sqrt(100 * d[2])))
 
   }
 
-  genDomain(sz) {
-    const alpha = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
-    let result = [];
-    for (let i = 0; i < sz; ++i) {
-      let ind = "";
-      for (let k = 0; k < 5; ++k)
-        ind += alpha[Math.floor(Math.random() * alpha.length)];
-        result.push(ind);
-    }
-
-    return result;
-  }
 
   tooltipHtml(v) {
     return "Mouse over";

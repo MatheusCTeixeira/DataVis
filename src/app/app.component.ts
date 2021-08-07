@@ -70,7 +70,6 @@ export class AppComponent {
     this.loadUsersLocs();
     this.loadMap();
     this.loadTopics();
-    console.log(this.topics);
   }
 
   loadSexWeek() {
