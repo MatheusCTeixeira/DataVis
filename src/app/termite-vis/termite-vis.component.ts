@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
+import { HAlignment, VAlignment } from '../types/align';
+import { Dimension } from '../types/dimension';
 import { Margin } from '../types/margin';
 
 @Component({
@@ -19,13 +21,16 @@ export class TermiteVisComponent implements OnInit {
 
   @Input()
   data;
-  _data;
+
+  _data; // internal representation of data
 
   @Input()
   show;
 
   @Input()
   margin: Margin;
+
+  // Bar customizations
 
   @Input()
   barLeftGap: number;
@@ -38,6 +43,17 @@ export class TermiteVisComponent implements OnInit {
 
   @Input()
   barLegendGap: number;
+
+  // Weeks axis customizations
+
+  @Input()
+  weekAxisDim: Dimension;
+
+  @Input()
+  weekAxisVAlignment: VAlignment;
+
+  @Input()
+  weekAxisHAlignment: HAlignment;
 
   @Input()
   weeksRadius;
@@ -58,7 +74,13 @@ export class TermiteVisComponent implements OnInit {
   accumulated: d3.InternMap<string, number>;
 
 
-  constructor() { }
+  public get VAlignment() {
+    return VAlignment;
+  }
+
+  constructor() {
+
+  }
 
   ngOnInit(): void {
   }
@@ -73,7 +95,6 @@ export class TermiteVisComponent implements OnInit {
 
   preprocess(week) {
     this.weeks = Object.keys(this.data).map(v => [+v, this.data[v] != null]);
-    console.log(this.weeks);
     this.hDomain = Object.keys(this.data[week]);
     this.vDomain = Array.from(new Set(d3.merge(Object.values(this.data[week]).map(v => Object.keys(v)))));
 
@@ -111,10 +132,13 @@ export class TermiteVisComponent implements OnInit {
 
     this.preprocess(week);
 
+    const screenWidth = d3.select("#mainContent").style("width");
+
     const svg = d3.select(`div#${this.innerId}-content`)
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
+        .attr("width", screenWidth)
       .append("g");
 
     const [vScale, hScale] = this.drawAxes(svg, this.vDomain, this.hDomain);
@@ -126,7 +150,6 @@ export class TermiteVisComponent implements OnInit {
     const wordWeight = this.vDomain.map(word => [word, this.accumulated[word]]);
     this.drawBars(svg, wordWeight, this.vDomain, vScale);
 
-    // const content = d3.merge(this.hDomain.map(topic => this.vDomain.map(word => [topic, word, 100 * Math.random()])));
     this.drawContent(svg, this._data, vScale, hScale);
 
     this.display = true;
@@ -135,10 +158,14 @@ export class TermiteVisComponent implements OnInit {
   drawWeeks() {
     const self = this;
     const diameter = 2 * this.weeksRadius;
+
+    const screenWidth = d3.select("#mainContent").style("width");
+
     const svg = d3.select(`div#${this.innerId}-weeks`)
       .append("svg")
-      .attr("width", this.width)
-      .attr("height", 50);
+      .attr("width", screenWidth)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("viewBox", `${this.weekAxisDim.x} ${this.weekAxisDim.y} ${this.weekAxisDim.width} ${this.weekAxisDim.height}`);
 
     const handler = function (d, i) {
       const sel = d3.select(this);
@@ -151,8 +178,23 @@ export class TermiteVisComponent implements OnInit {
           .style("opacity", 0.3);
     }
 
+    let x = 0, y = 0;
+    if (this.weekAxisVAlignment == VAlignment.TOP)
+      y = this.weeksRadius;
+    else if (this.weekAxisVAlignment == VAlignment.BOTTOM)
+      y = this.weekAxisDim.height - this.weeksRadius;
+    else if (this.weekAxisVAlignment == VAlignment.CENTER)
+      y = this.weekAxisDim.height/2;
+
+    const _width = (diameter + this.weekPadding) * (this.weeks.length - 1) + this.weeksRadius;
+    if (this.weekAxisHAlignment == HAlignment.LEFT)
+      x = this.weeksRadius;
+    else if (this.weekAxisHAlignment == HAlignment.RIGHT)
+      x = this.weekAxisDim.width - _width;
+    else if (this.weekAxisHAlignment == HAlignment.CENTER)
+      x = (this.weekAxisDim.width - _width)/2;
+
     svg.append("g")
-      .attr("transform", `translate(${this.margin.left/2}, 0)`)
       .classed("weekOptions", true)
       .selectAll("circle")
       .data(this.weeks)
@@ -160,8 +202,8 @@ export class TermiteVisComponent implements OnInit {
         enter.append("circle")
           .attr("r", this.weeksRadius)
           .attr("fill", d => d[1] ? "yellow" : "gray")
-          .attr("cx", (_, i) => (diameter + this.weekPadding) * i)
-          .attr("cy", 25)
+          .attr("cx", (_, i) => x + (diameter + this.weekPadding) * i)
+          .attr("cy", y)
           .attr("stroke", "black")
           .style("opacity", d => this.week == d[0] ? 1 : 0.4)
           .each(handler);
@@ -171,8 +213,8 @@ export class TermiteVisComponent implements OnInit {
           .attr("text-anchor", "middle")
           .attr("dominant-baseline", "middle")
           .attr("font-size", 8)
-          .attr("x", (_, i) => (diameter + this.weekPadding) * i)
-          .attr("y", 25)
+          .attr("x", (_, i) => x + (diameter + this.weekPadding) * i)
+          .attr("y", y)
           .each(handler);
 
       });
@@ -254,7 +296,7 @@ export class TermiteVisComponent implements OnInit {
             .attr("width", (d, i) => 0)
             .attr("fill", _ => d3.interpolateReds(0))
           .transition()
-            .duration(5000)
+            .duration(1000)
             .ease(d3.easeLinear)
             .attr("width", (d, i) => d[0][1] * this.barMaxLenth)
             .attr("fill", d => d3.interpolateReds(d[0][1]));
@@ -267,7 +309,7 @@ export class TermiteVisComponent implements OnInit {
           .attr("font-size", 0.7* this.barWidth)
           .html(d => d[0][0])
           .transition()
-          .duration(5000)
+          .duration(1000)
           .ease(d3.easeLinear)
           .attr("dx", d => d[0][1] * this.barMaxLenth + this.barLegendGap)
       });

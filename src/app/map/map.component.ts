@@ -64,10 +64,13 @@ export class MapComponent implements OnInit {
   }
 
   draw(): void {
+    const screenWidth = d3.select("#mainContent").style("width");
+
     this.svg = d3.select("#map")
       .append("svg")
-      .attr("width", this.width)
-      .attr("height", this.height)
+      .attr("width", screenWidth)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
       .append("g");
 
     [this.userLocations, this.tweetCoords].forEach(values => {

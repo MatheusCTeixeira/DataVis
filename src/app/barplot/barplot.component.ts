@@ -79,10 +79,15 @@ export class BarplotComponent implements OnInit {
     this.maxValue = d3.max(this.data.values.map(v => v[v.length -1][2]));
     this.domain = this.data.values.map(bars => bars.map(bar => bar[0])[0]);
 
+    const screenWidth = d3.select("#mainContent").style("width");
+
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
         .attr("width", this.width)
-        .attr("height", this.height)
+        .attr("width", screenWidth)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
+
       .append("g");
 
     const hScale = d3.scaleBand()

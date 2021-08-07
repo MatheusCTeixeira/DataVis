@@ -18,7 +18,7 @@
     </ul>
   </div>
 
-  <div class="main">
+  <div class="main" id="mainContent">
     <div class="credit">
       Gráficos desenvolvidos por
       <a href="https://github.com/MatheusCTeixeira">@MatheusCTeixeira</a>
@@ -189,6 +189,9 @@
         [barWidth]="15"
         [barMaxLenth]="30"
         [barLegendGap]="5"
+        [weekAxisDim]="{x: 0, y: 0, width: 900, height: 50}"
+        [weekAxisVAlignment]='VAlignment.CENTER'
+        [weekAxisHAlignment]='HAlignment.CENTER'
         [weeksRadius]="10"
         [weekPadding]="3"
         [show]="topicsLoaded">

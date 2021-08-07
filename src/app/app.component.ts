@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import * as d3 from "d3";
+import { HAlignment, VAlignment } from './types/align';
 import { BarData, BarSeries } from './types/bardata';
 import { Polarities } from './types/polaritiries';
 
@@ -56,6 +57,14 @@ export class AppComponent {
 
   topics: any;
   topicsLoaded: boolean = false;
+
+  public get VAlignment() {
+    return VAlignment;
+  }
+
+  public get HAlignment() {
+    return HAlignment;
+  }
 
   constructor() {
 

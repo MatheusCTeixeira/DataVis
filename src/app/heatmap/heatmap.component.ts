@@ -71,10 +71,13 @@ export class HeatmapComponent implements OnInit {
     let X = Object.keys(this.data[0]).filter(key => key != "group");
     let Y = this.data.map(row => +row.group)
 
+    const screenWidth = d3.select("#mainContent").style("width");
+
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height)
+        .attr("width", screenWidth)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `0 0 ${this.width} ${this.height}`)
       .append("g");
 
     this.preprocess();
@@ -119,8 +122,6 @@ export class HeatmapComponent implements OnInit {
       .extent([[0, 0], [this.heatmapScaleWidth, this.heatmapWidth]])
       .on("end", (e)=> this.highlight(selection, e)));
 
-
-
     const offsetX = this.heatmapScaleWidth;
     const ticks = d3.ticks(0, 1, 20);
     // Desenha os ticks
@@ -144,7 +145,7 @@ export class HeatmapComponent implements OnInit {
 
   drawAxes(svg, content, X: any[], Y: any[]) {
     const hRange = [this.margin.left, this.margin.left + this.heatmapWidth];
-    const scaleH = d3.scaleBand(X, hRange).padding(0).round(true);
+    const scaleH = d3.scaleBand(X, hRange).round(true);
     const axisTop = d3.axisTop(scaleH);
 
     svg.append("g")
@@ -166,15 +167,15 @@ export class HeatmapComponent implements OnInit {
           const vRange = [this.margin.top, this.margin.top + this.heatmapWidth];
 
           const newScaleV = d3.scaleBand(Y, vRange).round(true);
-          const axisLeft = this.nTicks(d3.axisLeft(scaleV), Y, 15);
+          const axisLeft = this.nTicks(d3.axisLeft(newScaleV), Y, 15);
 
           svg.select("g.axisV").call(axisLeft);
 
           this.genBlocks(content, scaleH, newScaleV, this.previousScale);
         });
 
-    const vRange = [this.margin.top, this.margin.top + this.heatmapWidth];
-    const scaleV = d3.scaleBand(Y, vRange).padding(0).round(true);
+    const vRange = [this.margin.top, this.margin.top + 800];
+    const scaleV = d3.scaleBand(Y, vRange).round(true);
     const axisLeft = this.nTicks(d3.axisLeft(scaleV), Y, 15);
 
     svg.append("g")
@@ -182,12 +183,13 @@ export class HeatmapComponent implements OnInit {
       .attr("transform", `translate(${this.margin.left}, ${0})`)
       .call(axisLeft);
 
+      console.log("scale", scaleH.bandwidth(), scaleV.bandwidth());
     return [scaleH, scaleV];
   }
 
   private nTicks(axis: d3.Axis<any>, domain: number[], n: number) {
     const step = Math.round(domain.length / n);
-    axis.tickValues(domain.filter((_, i) => i % step === 0));
+    axis.tickValues(domain.filter((_, i) => i % step == 0));
     return axis;
   }
 
@@ -221,11 +223,12 @@ export class HeatmapComponent implements OnInit {
               .attr("y", d => scaleY(d[1]))
               .attr("width", scaleX.bandwidth())
               .attr("height", scaleY.bandwidth())
+              .attr("shape-rendering", "crispEdges")
               .attr("fill", (d, i) => d3.interpolateInferno(+d[2]))),
         update => update
               .attr("transform", d => "translate(0, 0)")
             .transition(t)
-              .attr("transform", d => {console.log(scaleY(d[0]) - previousScaleY(d[0])); return `translate(0, ${scaleY(d[0]) - previousScaleY(d[0])})`})
+              .attr("transform", d => `translate(0, ${scaleY(d[0]) - previousScaleY(d[0])})`)
       );
   }
 
