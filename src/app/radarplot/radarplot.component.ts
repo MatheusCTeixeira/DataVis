@@ -16,8 +16,14 @@ export class RadarplotComponent implements OnInit {
   median: number[] = [];
   mean: number[] = [];
 
-  @Input() width;
-  @Input() height;
+  @Input()
+  _width;
+
+  @Input()
+  width;
+
+  @Input()
+  height;
 
   margin = 30;
 
@@ -60,8 +66,9 @@ export class RadarplotComponent implements OnInit {
 
     const svg = d3.select("#radar")
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height)
+        .attr("width", this._width)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `0 0 ${this.width} ${this.height}`)
       .append("g");
 
     const x = d3.scaleLinear()

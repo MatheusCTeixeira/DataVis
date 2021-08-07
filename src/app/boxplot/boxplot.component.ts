@@ -18,6 +18,9 @@ export class BoxplotComponent implements OnInit {
   data: {label?: string, style?: {boxColor?: any}, data: [number, number][]}[];
 
   @Input()
+  _width: number;
+
+  @Input()
   width: number;
 
   @Input()
@@ -101,8 +104,10 @@ export class BoxplotComponent implements OnInit {
 
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height);
+        .attr("width", this._width)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `0 0 ${this.width} ${this.height}`)
+      .append("g");
 
     const x = d3.scalePoint()
       .padding(0.5)

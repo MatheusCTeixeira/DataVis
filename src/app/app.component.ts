@@ -46,6 +46,7 @@ export class AppComponent {
     {label: "Sex", style: {boxColor: "black"}, data: []},
     {label: "Sáb", style: {boxColor: "black"}, data: []},
     {label: "Dom", style: {boxColor: "black"}, data: []}];
+
   tweetsByDayLoaded = false;
 
     // estado, polaridade da semana; a favor vs. contra
@@ -64,6 +65,10 @@ export class AppComponent {
 
   public get HAlignment() {
     return HAlignment;
+  }
+
+  public get curwidth() {
+    return +d3.select("#mainContent").style("width").replace("px", "");
   }
 
   constructor() {

@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import * as d3Scale from "d3-scale";
 import * as d3Axis from "d3-axis";
 import { DecimalPipe } from '@angular/common';
+import { Dimension } from '../types/dimension';
 @Component({
   selector: 'app-lineplot',
   templateUrl: './lineplot.component.html',
@@ -11,6 +12,9 @@ import { DecimalPipe } from '@angular/common';
 export class LineplotComponent implements OnInit {
   @Input()
   height;
+
+  @Input()
+  _width;
 
   @Input()
   width;
@@ -63,8 +67,9 @@ export class LineplotComponent implements OnInit {
   draw(): void {
     const svg = d3.select(`#${this.innerId}`)
       .append("svg")
-        .attr("width", this.width)
-        .attr("height", this.height)
+        .attr("width", this._width)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `0 0 ${this.width} ${this.height}`)
       .append("g");
 
     const hScale = d3Scale.scaleLinear()

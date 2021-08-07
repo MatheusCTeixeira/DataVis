@@ -63,15 +63,25 @@ export class MapComponent implements OnInit {
 
   }
 
-  draw(): void {
+  factory() {
     const screenWidth = d3.select("#mainContent").style("width");
 
-    this.svg = d3.select("#map")
+    return d3.select("#map")
       .append("svg")
-      .attr("width", screenWidth)
-      .attr("preserveAspectRatio", "xMidYMid meet")
-      .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
+        .attr("width", screenWidth)
+        .attr("preserveAspectRatio", "xMidYMid meet")
+        .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
+        .attr("version", "1.1")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attr("xmlns:xhtml", "http://www.w3.org/1999/xhtml")
       .append("g");
+  }
+
+  draw(): void {
+
+
+    this.svg = this.factory();
 
     [this.userLocations, this.tweetCoords].forEach(values => {
       let maxValue = null;
@@ -95,11 +105,7 @@ export class MapComponent implements OnInit {
   plotWeek(week: number) {
     d3.select("#map").selectAll("*").remove();
 
-    this.svg = d3.select("#map")
-      .append("svg")
-      .attr("width", this.width)
-      .attr("height", this.height)
-      .append("g")
+    this.svg = this.factory()
       .attr("class", "standardMap");
 
     const cuiaba = <[number, number]>[-15.595833, -56.096944];
@@ -112,25 +118,64 @@ export class MapComponent implements OnInit {
         [this.width - this.margin.right, this.height - this.margin.bottom]
       ], this.map);
 
-    let geoGenerator = d3Geo.geoPath().projection(projection);
+    const path = d3Geo.geoPath();
+    const geoGenerator = path.projection(projection);
 
     // Plot main content, ie, the map
     this.svg
       .selectAll("path")
       .data(this.map.features)
-      .join(enter =>
+      .join(enter => {
         enter.append("path")
           .attr("d", d => geoGenerator(d))
           .attr("stroke", "#000")
           .attr("stroke-width", 1)
           .attr("fill", d => this.setColor(d.properties.code, this.data[week]))
-          .call((sel) => this.tooltip(sel, week, "weekly")));
+          .call((sel) => this.tooltip(sel, week, "weekly"))
+
+          return enter.append("text")
+          .text(d => d.properties.code)
+          .attr("x", d => path.centroid(d)[0])
+          .attr("y", d => path.centroid(d)[1])
+          .attr("text-anchor", "middle")
+          .attr("dominant-baseline", "middle")
+          .attr("font-size", 10)
+      });
+
+    // Plot ranking
+    this.addTable(this.svg, week);
 
     // Plot return label
     this.addReturnButton(this.svg);
 
     // Plot title
     this.addTitle(week);
+  }
+
+  private addTable(selection, week) {
+    const polarities = Object.entries(this.data[week])
+      .sort((r, l) => Math.abs(l[1][0] - l[1][1]) - Math.abs(r[1][0] - r[1][1]))
+      .slice(0, 10);
+
+    selection = selection.append("g")
+      .classed("ranking", true);
+
+    selection.selectAll("text")
+      .data(polarities)
+      .join("text")
+        .text((d, i) => `${this.decPipe.transform(i+1, "1.0-0").padStart(2, ' ')} - ${d[0]} → ${this.decPipe.transform(d[1][0], "1.0-0").padStart(5, ' ')} (+) ${this.decPipe.transform(d[1][1], "1.0-0").padStart(5, ' ')} (-) ${Math.abs(d[1][0] - d[1][1]).toString().padStart(3, ' ')} (Δ)`)
+        .attr("x", 60)
+        .attr("y", (_, i) => 500 + (i + 1) * 20)
+        .attr("fill", d => d[1][0] > d[1][1] ? "green" : "red")
+        .attr("font-family", "monospace")
+        .attr("font-size", 10)
+        .style("white-space", "pre");
+
+    selection.append("text")
+      .text("TOP-10 ESTATOS MAIS POLARIZADOS")
+      .attr("x", 50)
+      .attr("y", 500)
+      .attr("font-weight", 700);
   }
 
   private addReturnButton(selection) {
@@ -168,6 +213,7 @@ export class MapComponent implements OnInit {
     const to = base.setDate(base.getDate() + 7 * (week + 1));
     const fromAsString = this.datePipe.transform(from, 'dd/MM');
     const toAsString = this.datePipe.transform(to, 'dd/MM');
+
     this.svg.append("text")
       .text(`${fromAsString} ─ ${toAsString}`)
       .attr("x", this.width / 2)

@@ -72,11 +72,12 @@
 
       <app-lineplot
         [data]="tweetsCounts"
-        title="Quantidade de tweets de cada classe"
+        title="# tweets de cada classe"
         xLabel="Semana"
         yLabel="# tweets"
         [legend]="tweetsCountsLegend"
         [color]="tweetsCountColor"
+        [_width]="0.5 * curwidth"
         [width]="450"
         [height]="300"
         [margin]="{bottom: 35, top: 35, left: 45, right: 10}"
@@ -86,11 +87,12 @@
 
       <app-lineplot
         [data]="tweetsCountsNorm"
-        title="Quantidade de tweets normalizado pela quantidade de usuários"
+        title="# tweets normalizado pela quantidade de usuários"
         xLabel="Semana"
         yLabel="# tweets/# usuários"
         [legend]="tweetsCountsNormLegend"
         [color]="tweetsCountColor"
+        [_width]="0.5 * curwidth"
         [width]="450"
         [height]="300"
         [margin]="{bottom: 35, top: 35, left: 40, right: 10}"
@@ -114,12 +116,14 @@
       <div style="display:flex; justify-content: space-around;">
 
         <app-radarplot
+          [_width]="curwidth/2"
           [width]="450"
           [height]="300">
         </app-radarplot>
 
         <app-boxplot
           innerId="bar_1"
+          [_width]="curwidth/2"
           [width]="450"
           [height]="300"
           [rangeX]="[0, 100]"
