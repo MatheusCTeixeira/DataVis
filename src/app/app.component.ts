@@ -10,6 +10,8 @@ import { Polarities } from './types/polaritiries';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  hideText = false;
+
   sexWeekLoaded = false;
                             //                          x        y0       yf
   sexWeek: {keys: string[], colors: string[], values: [string, number, number][][]} = {
@@ -202,5 +204,11 @@ export class AppComponent {
     .finally(() => this.topicsLoaded = true);
   }
 
+  hide() {
+    this.hideText = !this.hideText;
+
+    d3.selectAll("p.hidable")
+      .style("display", this.hideText ? "none" : "");
+  }
 
 }

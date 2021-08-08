@@ -25,15 +25,42 @@
       e com contribuições de
       <a href="https://github.com/pedrobrum">@pedrobrum</a>.
     </div>
+    <div style="text-align: center;">
+      <button mat-raised-button color="warn" (click)="hide()">
+        {{hideText ? 'Mostrar' : 'Ocultar' }} textos
+      </button>
+    </div>
     <section id="introducao">
       <h2>Introdução</h2>
-      <p>
+      <p class="hidable">
         Uma aspecto característico da democrácia é a pluraridade de ideias. Tempos
         incomuns, como a pandemia de COVID-19, é capaz de fazer que grupos abracem
         os seus ideias com mais vigor, ou seja, os diversos grupos se polarizam
         dentro de opniões ou ideias políticos. Um diferencial desta pandemia em
         relação as anteriores é a alta conectividade e disseminação de informações
-        entre as pessoas.
+        entre as pessoas. Um fênomeno ímpar é a denominada "misinformation", que
+        se refere a informações incorretas, manipuladas ou distorcidas visando
+        visando embasar em narrativas políticas e sociais.
+      </p>
+      <p class="hidable">
+        Nesta pesquisa nós exploramos como os usuários da rede social Twitter,
+        uma das mais usadas por políticos para publicas informações e opniões,
+        se comportaram ou sobre o que eles publicaram nesse período. Supreendente,
+        nossa investigação demonstrou uma grande presença de bots (não necessariamente
+        linkados a políticos ou a disseminação de fake news) que criam eco em
+        na publicação de determinados assuntos.
+      </p>
+      <p class="hidable">
+        A seguir, nós apresentam um recorte dos resultados encontrados. Devido
+        a limitações de tempo, apenas uma parte da infinidade de formas de
+        visualizações possiveis são apresentadas. O objetivo é apresentar ao
+        leitor que, embora haja milhões de tweets publicados ao longo de 36 semanas
+        de pesquisa, é possível observar padrões interessantes que usuários
+        independendes (no sentido de não se conhecerem) apresentarem comportamentos
+        correlacionados, muito diferente de um processo puramente aleatório. Esse
+        comportamente mostra a presença de <i>swarm intelligence</i> (leia cap. 5 de
+        <a href="https://www.amazon.com.br/Fundamentals-Natural-Computing-Algorithms-Applications/dp/1584886439">
+          Fundamentals of Natural</a>).
       </p>
       <div>
 
@@ -42,11 +69,64 @@
 
     <section id="dados">
       <h2>Dados</h2>
-
+      <p class="hidable">
+        Os dados apresentados são o resultado da coleta de mais de 100M de tweets
+        publicados por 36 semanas. Os resultados são apresentados usando a semanas
+        como um offset em relação ao início da coleta, logo a primeira semana
+        apresentada é em relação a 18ª epidemiologica, isto é, 26/04/2020.
+      </p>
+      <p class="hidable">
+        Os dados extraídos do Twitter estão no formato JSON de acordo com a
+        <a href="https://developer.twitter.com/en/docs/twitter-api/v1/data-dictionary/object-model/tweet">API</a> do
+        Twitter. Por questões de política da platoforma, nomes e <i>screen name</i> dos
+        usuários estudas são mantidos em sigilo.
+      </p>
+      <p class="hidable">
+        Os dados apresentação formar pré-processados para favorecer a usuabilidade
+        da página e, dessa forma, acelerar a renderização do conteúdo e favorecer
+        a fluidez do conteúdo.
+      </p>
     </section>
 
     <section id="bots">
       <h2>Bots</h2>
+      <p class="hidable">
+        Bots são usuários que automatização completamente ou parcialmente determinadas
+        ações como publicar tweets ou retweets tweets que possuam determinados
+        tokens.
+      </p>
+      <p class="hidable">
+        Nós observamos a presença de bots que retweetam tweets que possuam determinadas
+        palavras (ex.: "quarentena", "cachorra", etc) e os usuários genuínos utilizam
+        disso para ampliar o alcance do conteúdo publicado e também a popularidade
+        das suas publicações, pois recebem retweets automaticamente. Outro padrão
+        observado é que alguns usuários aderem a campanhas para conseguir seguidores
+        automaticamente, portanto, é comum ver tweets com hashtags na forma
+        <i>#followtrick</i> e variações.
+      </p>
+      <p class="hidable">
+        Para verificar se o determinado é bot ou não, nós usamos a ferramente
+        chamada de Botometer, que gera uma pontuação, um score, que indica a propabilidade
+        do usuário requisitado ser o não bot após analisar o conteúdo publicado.
+        Esse ferramenta é usuada em diversos artigos e compõe o estado-da-arte.
+        Entretanto, a ferramenta possui limitação de requisições que podem ser
+        feitas usuário o plano free, portanto uma heurística foi adotada para
+        maximizar a probabilidade de que o usuário buscado seja de fato bot.
+      </p>
+      <p>
+        Após verificar mais de 34 mil usuários usando o Botometer, nós extraímos
+        mais de 120 features (par delas são estatísticas derivadas de uma feature
+        primária) e usamos esses usuários para selecionar outro dos mais de 5M
+        de usuários para aumentar a probabilidade de encontrar os bots, ou seja,
+        nós classificamos, treinanos e re-classificamos (o processo é mais complexo
+        do que isso, porém foi omitido alguns detalhes). Para visualizar as 120
+        features de 34 mil usuários, optamos por usar um heatmap. Devido capacidade
+        de processamento reduzida dos browsers, nós agrupamos os 34 mil usuários
+        em 800 grupos e as sumarizamos a features adotando a mediana. Os grupos
+        são formados ordenando os usuários pela probabilidade dada pelo Botometer
+        e agrupando a cada 34.000/800 = 43 usuários, ou seja, o grupo <b>i</b> é formado
+        pelos usuários [43 × i, 43 × (i + 1)).
+      </p>
       <app-heatmap
         [width]="950"
         [height]="950"
@@ -63,14 +143,35 @@
 
     <section id="caracterizacao">
       <h2>Caracterização</h2>
+      <p class="hidable">
+        Neste seção apresentamos diversas caracterização que ressaltam que os
+        comportamentos não são aleatórios e que através do Twitter é possível
+        observar a polarização política de usuários de acordo com a região e
+        reflete os resultados de muitas processos eleitorais ao longo do ano, isto
+        é, determinados estado possui uma polaridade política característica.
+      </p>
       <h4>Comportamento dos usuários</h4>
+      <p class="hidable">
+        Nesta seção apresentamos a quantidade de tweets publicada por cada grupo
+        (contra, a favor e bot) ao longo da pesquisa. Quando análisado em valores
+        absolutos, é fácil notar que usuários a favor do governo publicaram
+        mais tweets do que os contra por todo o tweet. Ainda quando consideramos
+        quantidade de tweets normalizada, isto é, <span style="white-space: nowrap">
+           <i># tweets / # usuários</i></span>
+        verificamos que os usuários a favor ainda publicam tweets do que os usuários
+        contra. Os bots (ou não, pois nós consideramos todos os que foram
+        classificados pelo Botometer, mesmo que tenha recebido baixa pontuação),
+        por sua vez, forma um grupo bem reduzido apenas 34 mil de um total de mais
+        de 5 milhões, possuem uma quantidade inexpressiva de publicações e a justificativa
+        para isso é que apenas caso isolados chegam a publicar uma quantidade massiva de tweets, porém
+        quando distribuido pelos 34.000, essa quantidade decai significativamente.
+      </p>
       <p>
-        Nesta seção podemos observar o comportamento de todos os usuários
-        ao longo do período estudado. Logo em seguida, podemos observar o comportamento
-        de cada grupo de usuário. Quando análisado em valores absolutos, com execeção
-        de um pico nas primeiras semanas, os valores de ambas as polaridades (favor e contra)
-        são bem semelhantes. Entretanto, quando a quantidade de tweets é normalizada
-        é possível verificar a proximidade entre a razão <code> # tweets / # usuários</code>
+        O gráfico a seguir (a esquerda) apresenta a quantidade de tweets produzida por cada
+        classe, onde a linha verde indica os usuários a favor, a vermelha indica os
+        contra e a cinza indica os bots. O outro gráfico (a direita) mostra a
+        quantidade de tweets divida pela quantidade de usuários usando as mesmas
+        cores para cada grupo.
       </p>
       <div style="display:flex; justify-content: space-around;">
 
@@ -116,6 +217,13 @@
         de tweets decaí ao longo das semanas (gera uma espiral). É interessante observar
         que os usuários publicam mais tweets em dias de semana do que no final de semana,
         o que pode ser observado comparados com os grids de referência do gráfico.
+      </p>
+      <p>
+        O boxplot apresenta os mesmos dados de uma forma diferente. A linha tracejada
+        indica a média e também demonstra que os usuários publicam mais tweets
+        nos dias de semana. Os box apresentam as informações padrão, isto é,
+        a mediana o 1º e 3º quantil e o máximo e mínimo dentro de μ ± 2 × σ. Os
+        outliers (círculos vermelhos) indicam os dias que anômalos.
       </p>
       <div style="display:flex; justify-content: space-around;">
 
@@ -166,18 +274,33 @@
       </app-barplot>
 
       <h4>Localização geográfica dos usuários</h4>
-      <p>
+      <p class="hidable">
         Os gráficos abaixo indicam a quantidade de tweets de cada estado do país.
         É possível notar que com o passar das semanas a quantidade de tweets cai
         drásticamente. Em praticamente todas as semanas o estado de São Paulo
         foi o que mais publicou tweets. Entretanto uma questão a ser considerada
         é também esse é o estado mais populoso do país, logo esse valor absoluto
-        pode perde o impacto. Para ajudar na visualização, todos as semanas são
-        plotadas juntas onde as semanas avançam horizontalmente e depois verticalmente,
-        ou seja, o mapa <code>(i, j)</code> representa a semana X e o mapa
-        <code>(i, j+1)</code> representa a semana X + 1.
+        pode perde o impacto.
       </p>
-
+      <p class="hidable">
+        Para identificar a localização de um tweets 3 pontos podem ser
+        observados: <code>coordinates</code>, que indica a coordenada de onde
+        o tweets foi publicado, <code>place</code>, que link o conteúdo do
+        tweet a uma localização e, por fim, a terceira considera um campo de texto
+        <code>location</code>, que o usuário preenche. Nós utilizamos uma linha
+        de municípios/estados do IBGE para vericar se a localização do usuário
+        é de algum estado ou município reconhecido. Todos os tweets que não foi
+        possível identificar a localização através desse 3 métodos (aplicados em cadeia)
+        foram desconsiderados da análise.
+      </p>
+      <p>
+        O gráfico abaixo indica a polarização de cada estado ao longo das 36
+        semanas, onde a cor verde indica a favor do governo e a cor vermelha
+        contra. Os dados foram normalizados no intervalo [-1, +1] dividido pela
+        maior diferença entre os usuários a favor e contra. Informações mais
+        detalhadas, a nível de estado, podem ser visualizadas selecionando algumas
+        das semanadas dos pequenosm múltiplos.
+      </p>
       <app-map
         [tweetCoords]="tweetsCoords"
         [userLocations]="userLocs"
@@ -187,6 +310,23 @@
       </app-map>
 
       <h4>Análise de Tópicos</h4>
+      <p class="hidable">
+        Por fim, nós analisamos os tópicos dos tweets publicados em cada semana,
+        porém devido a problemas de escalabilidade não foi possível coletar os
+        resultados das semanas além da 16ª. Os resultados apresentados são
+        de 10 tópicos, onde cada tópico possui entorno de 10 palavras, pois um
+        pré-processamento permite mesclar algumas palavras como covid19 e covid,
+        corona e coronavirus, etc.
+      </p>
+      <p>
+        As intersecções entre a palavras <i>p</i> e o tópicos <i>t</i> indicam a
+        importância ou peso de <i>p</i> em <i>t</i>. A intensidade ou magnitude
+        do peso é indicado tanto pelo raio quanto pela cor, onde quanto mais escuro
+        e amplo mais importante é. O barplot indica os pesos de uma determinada
+        palavras acumalada em relação a todos os tópicos e rankeadas pela palavra
+        que acumula a maior somatória e as demais são normalizadas em relação a
+        ela.
+      </p>
       <app-termite-vis
         innerId="termite"
         [data]="topics"
@@ -209,6 +349,37 @@
 
     <section id="conclusao">
       <h2>Conclusão</h2>
+      <p class="hidable">
+        Nesta pesquisa apresentamos diversas análises feitas sobre a rede social
+        Twitter, que reflete diversos padrões comportamentais sociais. O foco
+        da pesquisa é observar a polarização dos usuários, o perfis deles e a
+        influência de bots, o que foi apresentado através de uma séries de visualizações
+        estatísticas e outras visualizações não muito utilizada no arcabouço de
+        visualização de dados como o Termite plot.
+      </p>
+      <p class="hidable">
+        Um problema associado a visualização de tópicos, além da escalabilidade
+        do enorme quantidade de documentos (1 tweet = 1 documento), está na
+        esparsidade do vetor de palavras de cada tópico e que faz com que o gráfico
+        que torna as visualizações muito longas para caber em todo o campo visual.
+        Mais processamentos nesse sentido podem resolver ou mitigar o problema e
+        são futuros trabalhos para a nossa pesquisa.
+      </p>
+      <p class="hidable">
+        Um ponto interessante é considerar as limitações dos browser e desenvolver
+        mecânismos para otimizar os gráficos para atendem e contornar tais limitações,
+        como foi o caso de agrupar os usuários para reduzir a quantidade de indivíduos
+        que tem que ser renderizados. Nesse caso, ao invés de construir aproximadamente
+        4.080.000 de ratângulos (34.000 × 120) nós plotamos menos de 50.000 utilizando
+        seleção de features e agrupandos os usuários que possuem pontuaões próximas, ou
+        seja, plotamos apenas 1% da quantidade original e ainda assim fomos capazes
+        de manter os padrões visuais que nos interessa.
+      </p>
+      <p class="hidable">
+        As transições (ou animações) também foram adotadas para facilidade e ressaltar
+        as mudanças provovadas pelas ações dos usuários e que também deve ser
+        considerado na questão de otimização/performance da página.
+      </p>
     </section>
     <section id="referencia">
       <h2>Referências</h2>

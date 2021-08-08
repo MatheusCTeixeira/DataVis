@@ -73,6 +73,25 @@ export class TermiteVisComponent implements OnInit {
 
   accumulated: d3.InternMap<string, number>;
 
+  substitute = {
+    "covid": "covid19",
+    "coronavirus": "covid19",
+    "corona": "covid19",
+    "cloroquina": "hidroxicloroquina",
+    "extra": "renda extra",
+    "renda": "renda extra",
+    "apoio": "apoio geral",
+    "geral": "apoio geral",
+    "paulo": "sao paulo",
+    "gov": "governador",
+    "isolamento": "isolamento social",
+    "social": "isolamento social",
+    "min": "ministro",
+    "leitos": "uti",
+    "camila": "camila pitanga",
+    "pitanga": "camila pitanga",
+  }
+
 
   public get VAlignment() {
     return VAlignment;
@@ -95,8 +114,6 @@ export class TermiteVisComponent implements OnInit {
 
   preprocess(week) {
     this.weeks = Object.keys(this.data).map(v => [+v, this.data[v] != null]);
-    this.hDomain = Object.keys(this.data[week]);
-    this.vDomain = Array.from(new Set(d3.merge(Object.values(this.data[week]).map(v => Object.keys(v)))));
 
     let maxOfWeek = 0;
     this.accumulated = new d3.InternMap<string, number>();
@@ -104,6 +121,15 @@ export class TermiteVisComponent implements OnInit {
       const topic = this.data[week][topic_id];
 
       for (let word in <any>topic) {
+        if (this.substitute.hasOwnProperty(word)) {
+          const value = this.data[week][topic_id][word];
+          delete this.data[week][topic_id][word];
+          word = this.substitute[word];
+          if (!this.data[week][topic_id].hasOwnProperty(word))
+          this.data[week][topic_id][word] = 0;
+          this.data[week][topic_id][word] += value;
+        }
+
         if (!this.accumulated.hasOwnProperty(word))
           this.accumulated[word] = 0;
 
@@ -116,6 +142,10 @@ export class TermiteVisComponent implements OnInit {
 
     for (let attr in this.accumulated)
       this.accumulated[attr] /= max;
+
+    this.hDomain = Object.keys(this.data[week]);
+    this.vDomain = Array.from(new Set(d3.merge(Object.values(this.data[week]).map(v => Object.keys(v)))));
+
 
     this._data = d3.cross(this.hDomain, this.vDomain)
       .map(X => [X[0], X[1], this.data[week][X[0]][X[1]]  != null ? this.data[week][X[0]][X[1]]/ maxOfWeek : 0]);
