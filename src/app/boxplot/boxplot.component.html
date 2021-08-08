@@ -3,5 +3,11 @@
     [height]="height"
     [show]="!display">
 </app-load-screen>
+
 <span id="{{innerId}}" [ngClass]="{'invisible': display === false}"></span>
+<app-tutorial
+help="Posicione o mouse sobre o box para visualizar informações mais precisas
+sobre cada semana. Posiciona o mouse sobre os outliers para visualizar datas
+anômolas, isto é, a 2 × σ da μ.">
+</app-tutorial>
 <div id="tooltip"></div>

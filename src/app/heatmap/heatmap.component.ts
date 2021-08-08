@@ -29,6 +29,8 @@ export class HeatmapComponent implements OnInit {
   @Input()
   show: boolean;
 
+  coord: [number, number];
+
   // Used as a reference to animation
   previousScale = null;
 
@@ -113,9 +115,11 @@ export class HeatmapComponent implements OnInit {
         .attr("class", "colorScale")
         .attr("transform", `translate(${this.margin.left + this.heatmapWidth + this.heatmapGap}, ${this.margin.top})`)
       .append("rect")
+        .attr("id", "colorScaleRect")
         .attr("width", this.heatmapScaleWidth)
         .attr("height", this.heatmapWidth)
         .attr("fill", "url(#scaleGrad)");
+
 
     // Ativa o brush
     group.call(d3.brushY()
@@ -124,6 +128,7 @@ export class HeatmapComponent implements OnInit {
 
     const offsetX = this.heatmapScaleWidth;
     const ticks = d3.ticks(0, 1, 20);
+
     // Desenha os ticks
     group.selectAll("text")
       .data(ticks)
@@ -134,6 +139,7 @@ export class HeatmapComponent implements OnInit {
           .attr("dominant-baseline", "middle")
           .attr("font-size", 11)
           .attr("fill", "#000")
+
        return enter.append("line")
           .attr("x1", offsetX - this.heatmapScaleWidth/3)
           .attr("x2", offsetX + 3)

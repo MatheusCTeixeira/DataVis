@@ -3,6 +3,10 @@
         [height]="height"
         [show]="!display">
 </app-load-screen>
+<app-tutorial
+help="Posicione o mouse sobre alguma barra para visualizar os valores precisos
+de uma determinada semana.">
+</app-tutorial>
 <div id={{innerId}} [ngClass]="{'invisible': display === false}"></div>
 <div id="tooltip"></div>
 

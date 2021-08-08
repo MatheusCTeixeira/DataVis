@@ -3,5 +3,10 @@
         [height]="height"
         [show]="!display">
 </app-load-screen>
+<app-tutorial
+        help="Clique no nome da feature (eixo X) para ordenar os
+                indivíduos por ela. Clique e deslise (mantenha pressionado) na escala (eixo Y)
+                para destacar indivíduos que possuem alguma feature dentro do intervalo (inclusivo).">
+</app-tutorial>
 <div id="{{innerId}}" [ngClass]="{'invisible': display === false}">
 </div>

@@ -1,0 +1,16 @@
+div.wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(119, 16, 16, 0.829);
+    margin: 10px 20px;
+    padding: 5px 10px;
+    border-left: 5px solid red;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    color: white;
+
+    div {
+        padding: 0 5px;
+    }
+}

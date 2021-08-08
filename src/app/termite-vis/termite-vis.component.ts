@@ -212,7 +212,8 @@ export class TermiteVisComponent implements OnInit {
           .text(d => d[0])
           .attr("text-anchor", "middle")
           .attr("dominant-baseline", "middle")
-          .attr("font-size", 8)
+          .attr("font-size", 9)
+          .attr("font-weight", 700)
           .attr("x", (_, i) => x + (diameter + this.weekPadding) * i)
           .attr("y", y)
           .each(handler);

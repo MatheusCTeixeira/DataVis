@@ -3,12 +3,21 @@
         [height]="height"
         [show]="!display">
 </app-load-screen>
-<div id="map" [ngClass]="{'invisible': display === false}"></div>
-<div id="tooltip"></div>
 
-<div style="display: flex; justify-content: space-between; flex-wrap: wrap; margin: 10px 20px; width: inherit;">
+<app-tutorial
+help="Na visão de pequenos-múltiplos, posicione o mouse sobre algum mapa para
+visualizar estatístcas em nível geral de uma determinada semana.
+Clique em algum mapa para visualizar informações precisas da semana selecionada
+e em nível de estado. Na visão detalhada, posicione o mouse sobre algum estado
+para verificar informações precisas sobre ele.">
+</app-tutorial>
+
+<div id="map" [ngClass]="{'invisible': display === false}"></div>
+
+<div style="display: flex; justify-content: flex-end;">
     <div>
         <button
+            class="backBtn"
             color="primary"
             mat-mini-fab
             (click)="download()">
@@ -16,3 +25,6 @@
         </button>
     </div>
 </div>
+
+
+<div id="tooltip"></div>

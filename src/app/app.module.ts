@@ -18,12 +18,12 @@ import { RadarplotComponent } from './radarplot/radarplot.component';
 import { BoxplotComponent } from './boxplot/boxplot.component';
 import { DatePipe, DecimalPipe, registerLocaleData } from '@angular/common';
 import { LOCALE_ID } from '@angular/core';
-import { DEFAULT_CURRENCY_CODE} from '@angular/core';
 import localePt from '@angular/common/locales/pt';
 import { HeatmapComponent } from './heatmap/heatmap.component';
 import { TermiteVisComponent } from './termite-vis/termite-vis.component';
 import { LoadScreenComponent } from './load-screen/load-screen.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { TutorialComponent } from './tutorial/tutorial.component';
 
 registerLocaleData(localePt, 'pt');
 
@@ -40,6 +40,7 @@ registerLocaleData(localePt, 'pt');
     HeatmapComponent,
     TermiteVisComponent,
     LoadScreenComponent,
+    TutorialComponent
   ],
   imports: [
     BrowserModule,
@@ -50,14 +51,15 @@ registerLocaleData(localePt, 'pt');
     MatToolbarModule,
     MatIconModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatIconModule,
   ],
   providers: [
     DecimalPipe,
     DatePipe,
- {   provide: LOCALE_ID,
-    useValue: 'pt'
-}
+  {   provide: LOCALE_ID,
+      useValue: 'pt'
+  },
   ],
   bootstrap: [AppComponent]
 })

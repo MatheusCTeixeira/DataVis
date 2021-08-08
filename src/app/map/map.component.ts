@@ -169,13 +169,15 @@ export class MapComponent implements OnInit {
         .attr("fill", d => d[1][0] > d[1][1] ? "green" : "red")
         .attr("font-family", "monospace")
         .attr("font-size", 10)
-        .style("white-space", "pre");
+        .style("white-space", "pre")
+        .style("cursor", "default");
 
     selection.append("text")
       .text("TOP-10 ESTATOS MAIS POLARIZADOS")
       .attr("x", 50)
       .attr("y", 500)
-      .attr("font-weight", 700);
+      .attr("font-weight", 700)
+      .style("cursor", "default");
   }
 
   private addReturnButton(selection) {
@@ -261,6 +263,7 @@ export class MapComponent implements OnInit {
           .attr("stroke-width", 1)
           .attr("fill", (d, i) => this.setColor(d.properties.code, this.data[week])))
       .call((sel) => this.tooltip(sel, week, "summarized"))
+      .style("cursor", "pointer")
       .on("click", (e) => this.plotWeek(week));
 
     const label = selection.append("g");
