@@ -33,7 +33,7 @@ export class LineplotComponent implements OnInit {
   data: [number, number][][];
 
   @Input()
-  title: string;
+  _title: string;
 
   @Input()
   xLabel: string;
@@ -70,7 +70,9 @@ export class LineplotComponent implements OnInit {
         .attr("width", this._width)
         .attr("preserveAspectRatio", "xMidYMid meet")
         .attr("viewBox", `0 0 ${this.width} ${this.height}`)
-      .append("g");
+        .classed(this.innerId, true)
+      .append("g")
+      .on("mouseover", () => null);
 
     const hScale = d3Scale.scaleLinear()
       .domain([1, 36])
@@ -142,12 +144,34 @@ export class LineplotComponent implements OnInit {
       this.addXLabel(svg);
       this.addYLabel(svg);
 
+      const self = this;
+
+      const line = svg.append("g").append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", vScale(0))
+        .attr("y2", vScale(1.2 * this.maxValue))
+        .attr("stroke", "black")
+        .attr("stroke-dasharray", 2 + " " + 2)
+        .attr("stroke-width", 1);
+
+      const labels = svg.append("g").classed("text", true).append("text");
+
+      svg.append("rect")
+        .attr("x", this.margin.left)
+        .attr("y", vScale(1.2 * this.maxValue))
+        .attr("width", hScale(36) - hScale(1) - 20)
+        .attr("height", vScale(0) - vScale(1.2 * this.maxValue))
+        .attr("fill", "transparent")
+        .on("mouseover", function(e, data) {self.tooltip(d3.select(this), labels, line, hScale, vScale);})
+
       this.display = true;
   }
 
   addLegend(selection) {
     selection.append("text")
-      .text(this.title)
+      .classed("title", true)
+      .text(this._title)
       .attr("x", this.width/2)
       .attr("y", this.margin.top/2)
       .attr("text-anchor", "middle");
@@ -177,6 +201,24 @@ export class LineplotComponent implements OnInit {
 
     const idx = Math.floor(i / 3);
     return (value / (Math.pow(10, 3 * idx))).toString() + ["", "k", "M", "B"][idx];
+  }
+
+  tooltip(selection, svg, line, hScale, vScale) {
+    selection
+      .on("mousemove", (e, data) => {
+        line.attr("x1", e.offsetX)
+            .attr("x2", e.offsetX);
+
+        const week = Math.round(hScale.invert(e.offsetX));
+        const values = this.data.map(serie => serie.filter(d => d[0] === week)[0]);
+
+        svg.text(values.reduce((l, r) => `${l}${r[1].toFixed(2)}, `, ""))
+            .attr("x", e.offsetX)
+            .attr("y", line.attr("y2"))
+            .attr("text-anchor", "middle")
+            .attr("font-size", 10);
+      }
+      );
   }
 
 }
