@@ -15,7 +15,7 @@ interface IData {
 @Component({
   selector: 'app-barplot',
   templateUrl: './barplot.component.html',
-  styleUrls: ['./barplot.component.scss']
+  styleUrls: ['./barplot.component.scss', '../tooltip.scss']
 })
 export class BarplotComponent implements OnInit {
   @Input()
@@ -216,21 +216,27 @@ export class BarplotComponent implements OnInit {
 
   tooltipHtml(i) {
     let message = `
-    <div style="display: flex; justify-content: flex-start; flex-flow: column;">
-      <div style="align-self: center;">ESTATÍSTICAS</div>
-      <div>Semana: ${i}</div>`
+    <div>
+      <div style="width:100%;text-align:center;"><b>ESTATÍSTICAS</b></div>
+      <div>${i}ª semana</div>`;
 
       const values = this.data.values.filter(v => v[0][0] === i)[0];
       const total = values[values.length - 1][2];
-
+      message += "<table>";
       for (let k = 0; k < this.data.keys.length; ++k) {
         const value = values[k][2] - values[k][1]; // Yf - Y0
         const pp = 100 * value / total;
         const formatedValue = this.decimalPipe.transform(value, "1.0-0", "pt");
         const formatedPP = this.decimalPipe.transform(pp, "1.2-2", "pt");
-        message += `<div>${this.data.keys[k]}: ${formatedValue} (${formatedPP}%)</div>`;
+        message += `<tr>
+        <td>
+          <span style="width:10px;height:10px;background-color:${this.data.colors[k]};display:inline-block;"></span>
+          ${this.data.keys[k]}
+        </td>
+        <td style="text-align: right;">${formatedValue} (${formatedPP}%)</td></tr>`;
       }
 
+    message += "</table>";
     message += "</div>"
     return message;
   }

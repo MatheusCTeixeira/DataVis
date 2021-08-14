@@ -7,7 +7,7 @@ import { DatePipe, DecimalPipe } from "@angular/common";
 @Component({
   selector: 'app-boxplot',
   templateUrl: './boxplot.component.html',
-  styleUrls: ['./boxplot.component.scss']
+  styleUrls: ['./boxplot.component.scss', '../tooltip.scss']
 })
 export class BoxplotComponent implements OnInit {
 
@@ -51,17 +51,18 @@ export class BoxplotComponent implements OnInit {
 
   mBW: number = 10;
 
-  tooltipHtml = (max, min, q1, q2, q3) => `
-  <div style="display: flex; justify-content: flex-start; flex-flow: column;">
-  <div style="align-self: center;">ESTATÍSTICAS</div>
-
-    <div>Máximo: ${this.decimalPipe.transform(max, "1.4-4")}</div>
-    <div>1º quantil: ${this.decimalPipe.transform(q1, "1.4-4")}</div>
-    <div>2º quantil: ${this.decimalPipe.transform(q2, "1.4-4")}</div>
-    <div>3º quantil: ${this.decimalPipe.transform(q3, "1.4-4")}</div>
-    <div>Mínimo: ${this.decimalPipe.transform(min, "1.4-4")}</div>
-  </div>
-  `;
+  tooltipHtml = (max, min, q1, q2, q3) => {
+    const fmt = (x) => this.decimalPipe.transform(x, "1.2-2");
+    return `<div>
+  <div style="width: 100%;text-align:center;"><b>ESTATÍSTICAS</b></div>
+    <table>
+      <tr><td style="width: 100%;">Máximo</td><td style="text-align: right;">${fmt(max)}</td></tr>
+      <tr><td style="width: 100%;">1º Quantil</td><td style="text-align: right;">${fmt(q1)}</td></tr>
+      <tr><td style="width: 100%;">2º Quantil</td><td style="text-align: right;">${fmt(q2)}</td></tr>
+      <tr><td style="width: 100%;">3º Quantil</td><td style="text-align: right;">${fmt(q3)}</td></tr>
+      <tr><td style="width: 100%;">Mínimo</td><td style="text-align: right;">${fmt(min)}</td></tr>
+    </table>
+  </div>`};
 
   toolTipHtmlForOutlier = (data) => {
     const base = new Date(2020, 4, 26);
@@ -70,10 +71,9 @@ export class BoxplotComponent implements OnInit {
     const date = base.setDate(base.getDate() + days + offset[data[0]]);
 
     return `
-    <div style="display: flex; justify-content: flex-start; flex-flow: column;">
-    <div style="align-self: center;">OUTLIER</div>
-      <div>${data[0]}</div>
-      <div>Dia: ${this.datePipe.transform(date, "dd/MM/yyyy")}</div>
+    <div>
+    <div style="width: 100%;text-align:center;"><b>OUTLIER</b></div>
+      <div>Dia: ${this.datePipe.transform(date, "dd/MM/yyyy")}, ${data[0]}</div>
       <div># Tweets: ${this.decimalPipe.transform(data[1].n_tweets, "1.0-0", "pt")}</div>
     </div>
   `;

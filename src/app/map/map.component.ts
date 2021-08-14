@@ -14,7 +14,7 @@ const r2 = x => Math.sqrt(x);
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss']
+  styleUrls: ['./map.component.scss', '../tooltip.scss']
 })
 export class MapComponent implements OnInit {
   svg = null;
@@ -150,6 +150,67 @@ export class MapComponent implements OnInit {
 
     // Plot title
     this.addTitle(week);
+
+    this.addScale(this.svg);
+  }
+
+  private addScale(svg) {
+    const selection = svg
+        .append("g")
+        .classed("scale", true);
+
+    selection.append("defs")
+      .append("linearGradient")
+        .attr("id", "scaleGrad1")
+        .attr("gradientTransform", "rotate(90)")
+        .selectAll("stop")
+        .data(d3.ticks(0, 1, 10))
+        .join("stop")
+          .attr("offset", d => d)
+          .attr("stop-color", d => d3.interpolateRdYlGn(1 - d))
+
+    selection.append("rect")
+      .attr("x", this.width - this.margin.right - 80)
+      .attr("y", this.height - this.margin.bottom - 120)
+      .attr("width", 20)
+      .attr("height", 80)
+      .attr("fill", "url(#scaleGrad1)");
+
+    selection.append("line")
+      .attr("x1", this.width - this.margin.right - 83)
+      .attr("x2", this.width - this.margin.right - 57)
+      .attr("y1", this.height - this.margin.bottom - 120)
+      .attr("y2", this.height - this.margin.bottom - 120)
+      .attr("stroke-width", 2)
+      .attr("stroke", "black");
+
+    selection.append("text")
+      .attr("x", this.width - this.margin.right - 55)
+      .attr("y", this.height - this.margin.bottom - 120)
+      .attr("dominant-baseline", "middle")
+      .text("A Favor");
+
+      selection.append("line")
+      .attr("x1", this.width - this.margin.right - 83)
+      .attr("x2", this.width - this.margin.right - 57)
+      .attr("y1", this.height - this.margin.bottom - 80)
+      .attr("y2", this.height - this.margin.bottom - 80)
+      .attr("stroke-width", 1)
+      .attr("stroke", "gray");
+
+    selection.append("line")
+      .attr("x1", this.width - this.margin.right - 83)
+      .attr("x2", this.width - this.margin.right - 57)
+      .attr("y1", this.height - this.margin.bottom - 40)
+      .attr("y2", this.height - this.margin.bottom - 40)
+      .attr("stroke-width", 2)
+      .attr("stroke", "black");
+
+    selection.append("text")
+      .attr("x", this.width - this.margin.right - 55)
+      .attr("y", this.height - this.margin.bottom - 40)
+      .attr("dominant-baseline", "middle")
+      .text("Contra");
   }
 
   private addTable(selection, week) {
@@ -353,14 +414,15 @@ export class MapComponent implements OnInit {
 
     return `
     <div style="display: flex; justify-content: flex-start; flex-flow: column;">
-    <div style="align-self: center;">ESTATÍSTICAS</div>
+    <div style="align-self: center;"><b>ESTATÍSTICAS</b></div>
 
-      <div>${state} - ${code}</div>
-      <div>${week + 1}ª semana</div>
-      <div>${n_coords} coordinates</div>
-      <div>${n_locations} locations</div>
-      <div>${fav} usuários à favor</div>
-      <div>${con} usuários contra</div>
+      <div>${state} - ${code}, ${week + 1}ª semana</div>
+      <table>
+        <tr><td style='width: 100%'>Coordinates</td><td style="text-align: right;">${n_coords}</td></tr>
+        <tr><td style='width: 100%'>Locations</td><td style="text-align: right;">${n_locations}</td></tr>
+        <tr><td style='width: 100%'>À Favor</td><td style="text-align: right;">${fav}</td></tr>
+        <tr><td style='width: 100%'>Contra</td><td style="text-align: right;">${con}</td></tr>
+      </table>
     </div>
     `;
   }
@@ -376,7 +438,7 @@ export class MapComponent implements OnInit {
 
     return `
     <div style="display: flex; justify-content: flex-start; flex-flow: column;">
-    <div style="align-self: center;">ESTATÍSTICAS</div>
+    <div style="align-self: center;"><b>ESTATÍSTICAS</b></div>
       <div>${week + 1}ª semana</div>
       <div>${transform(n_coords)} coordinates</div>
       <div>${transform(n_locations)} locations</div>

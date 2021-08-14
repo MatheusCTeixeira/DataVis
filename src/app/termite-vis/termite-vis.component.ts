@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import * as d3 from "d3";
 import { HAlignment, VAlignment } from '../types/align';
@@ -7,7 +8,7 @@ import { Margin } from '../types/margin';
 @Component({
   selector: 'app-termite-vis',
   templateUrl: './termite-vis.component.html',
-  styleUrls: ['./termite-vis.component.scss']
+  styleUrls: ['../tooltip.scss', './termite-vis.component.scss']
 })
 export class TermiteVisComponent implements OnInit {
   @Input()
@@ -74,22 +75,22 @@ export class TermiteVisComponent implements OnInit {
   accumulated: d3.InternMap<string, number>;
 
   substitute = {
-    "covid": "covid19",
-    "coronavirus": "covid19",
-    "corona": "covid19",
-    "cloroquina": "hidroxicloroquina",
-    "extra": "renda extra",
-    "renda": "renda extra",
-    "apoio": "apoio geral",
-    "geral": "apoio geral",
-    "paulo": "sao paulo",
-    "gov": "governador",
-    "isolamento": "isolamento social",
-    "social": "isolamento social",
-    "min": "ministro",
-    "leitos": "uti",
-    "camila": "camila pitanga",
-    "pitanga": "camila pitanga",
+    // "covid": "covid19",
+    // "coronavirus": "covid19",
+    // "corona": "covid19",
+    // "cloroquina": "hidroxicloroquina",
+    // "extra": "renda extra",
+    // "renda": "renda extra",
+    // "apoio": "apoio geral",
+    // "geral": "apoio geral",
+    // "paulo": "sao paulo",
+    // "gov": "governador",
+    // "isolamento": "isolamento social",
+    // "social": "isolamento social",
+    // "min": "ministro",
+    // "leitos": "uti",
+    // "camila": "camila pitanga",
+    // "pitanga": "camila pitanga",
   }
 
 
@@ -97,7 +98,7 @@ export class TermiteVisComponent implements OnInit {
     return VAlignment;
   }
 
-  constructor() {
+  constructor(private _decPipe: DecimalPipe) {
 
   }
 
@@ -126,7 +127,7 @@ export class TermiteVisComponent implements OnInit {
           delete this.data[week][topic_id][word];
           word = this.substitute[word];
           if (!this.data[week][topic_id].hasOwnProperty(word))
-          this.data[week][topic_id][word] = 0;
+            this.data[week][topic_id][word] = 0;
           this.data[week][topic_id][word] += value;
         }
 
@@ -148,7 +149,7 @@ export class TermiteVisComponent implements OnInit {
 
 
     this._data = d3.cross(this.hDomain, this.vDomain)
-      .map(X => [X[0], X[1], this.data[week][X[0]][X[1]]  != null ? this.data[week][X[0]][X[1]]/ maxOfWeek : 0]);
+      .map(X => [X[0], X[1], this.data[week][X[0]][X[1]] != null ? this.data[week][X[0]][X[1]] / maxOfWeek : 0]);
   }
 
   clear() {
@@ -166,9 +167,9 @@ export class TermiteVisComponent implements OnInit {
 
     const svg = d3.select(`div#${this.innerId}-content`)
       .append("svg")
-        .attr("preserveAspectRatio", "xMidYMid meet")
-        .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
-        .attr("width", screenWidth)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("viewBox", `${0} ${0} ${this.width} ${this.height}`)
+      .attr("width", screenWidth)
       .append("g");
 
     const [vScale, hScale] = this.drawAxes(svg, this.vDomain, this.hDomain);
@@ -214,7 +215,7 @@ export class TermiteVisComponent implements OnInit {
     else if (this.weekAxisVAlignment == VAlignment.BOTTOM)
       y = this.weekAxisDim.height - this.weeksRadius;
     else if (this.weekAxisVAlignment == VAlignment.CENTER)
-      y = this.weekAxisDim.height/2;
+      y = this.weekAxisDim.height / 2;
 
     const _width = (diameter + this.weekPadding) * (this.weeks.length - 1) + this.weeksRadius;
     if (this.weekAxisHAlignment == HAlignment.LEFT)
@@ -222,7 +223,7 @@ export class TermiteVisComponent implements OnInit {
     else if (this.weekAxisHAlignment == HAlignment.RIGHT)
       x = this.weekAxisDim.width - _width;
     else if (this.weekAxisHAlignment == HAlignment.CENTER)
-      x = (this.weekAxisDim.width - _width)/2;
+      x = (this.weekAxisDim.width - _width) / 2;
 
     svg.append("g")
       .classed("weekOptions", true)
@@ -265,13 +266,13 @@ export class TermiteVisComponent implements OnInit {
     const hAxis = d3.axisTop(hScale);
 
     selection.append("g")
-        .attr("class", "hAxis")
-        .attr("transform", `translate(0, ${this.margin.top + 2 * 20})`)
-        .call(hAxis)
+      .attr("class", "hAxis")
+      .attr("transform", `translate(0, ${this.margin.top + 2 * 20})`)
+      .call(hAxis)
       .selectAll("text")
-        .attr("text-anchor", "start")
-        .attr("dominant-baseline", "text-bottom")
-        .attr("transform", "rotate(-45)");
+      .attr("text-anchor", "start")
+      .attr("dominant-baseline", "text-bottom")
+      .attr("transform", "rotate(-45)");
 
     return [vScale, hScale];
   }
@@ -320,24 +321,24 @@ export class TermiteVisComponent implements OnInit {
       .data(formatted)
       .join(enter => {
         enter.append("rect")
-            .attr("x", 0)
-            .attr("y", (d, i) => vScale(d[1]) - this.barWidth / 2)
-            .attr("height", this.barWidth)
-            .attr("rx", 0.2 * this.barWidth)
-            .attr("width", (d, i) => 0)
-            .attr("fill", _ => d3.interpolateReds(0))
+          .attr("x", 0)
+          .attr("y", (d, i) => vScale(d[1]) - this.barWidth / 2)
+          .attr("height", this.barWidth)
+          .attr("rx", 0.2 * this.barWidth)
+          .attr("width", (d, i) => 0)
+          .attr("fill", _ => d3.interpolateReds(0))
           .transition()
-            .duration(1000)
-            .ease(d3.easeLinear)
-            .attr("width", (d, i) => d[0][1] * this.barMaxLenth)
-            .attr("fill", d => d3.interpolateReds(d[0][1]));
+          .duration(1000)
+          .ease(d3.easeLinear)
+          .attr("width", (d, i) => d[0][1] * this.barMaxLenth)
+          .attr("fill", d => d3.interpolateReds(d[0][1]));
 
         enter.append("text")
           .attr("dominant-baseline", "middle")
           .attr("x", 0)
           .attr("y", d => vScale(d[1]))
           .attr("dx", 0)
-          .attr("font-size", 0.7* this.barWidth)
+          .attr("font-size", 0.7 * this.barWidth)
           .html(d => d[0][0])
           .transition()
           .duration(1000)
@@ -349,56 +350,77 @@ export class TermiteVisComponent implements OnInit {
   drawContent(selection, content, vScale, hScale) {
 
     selection.append("g")
-        .attr("class", "content")
+      .attr("class", "content")
       .selectAll("circle")
       .data(content)
       .join(enter =>
         enter.append("circle")
-            .attr("cx", d => hScale(d[0]))
-            .attr("cy", d => vScale(d[1]))
-            .attr("r", 0)
-            .attr("fill", d => d3.interpolateReds(0))
-            .attr("stroke", "black")
-            .call(this.tooltip)
+          .attr("cx", d => hScale(d[0]))
+          .attr("cy", d => vScale(d[1]))
+          .attr("r", 0)
+          .attr("fill", d => d3.interpolateReds(0))
+          .attr("stroke", "black")
+          .call(this.tooltip)
           .transition()
-            .duration(1000)
-            .ease(d3.easeLinear)
-            .attr("fill", d => d3.interpolateReds(d[2]))
-            .attr("r", d => Math.sqrt(100 * d[2])))
+          .duration(1000)
+          .ease(d3.easeLinear)
+          .attr("fill", d => d3.interpolateReds(d[2]))
+          .attr("r", d => Math.sqrt(100 * d[2])))
 
   }
 
 
-  tooltipHtml(v) {
-    return "Mouse over";
+  tooltipHtml([topic, cur_word, value]) {
+    const fmt = (x) => this._decPipe.transform(x, '1.6-6');
+    const words = this.data[this.week][topic];
+    let html = "<div>";
+    html += "<div style='width: 100%;text-align:center;'><b>ESTATÍSTICAS</b></div>"
+    html += "<table>"
+    for (const [index, [word, weight]] of Object.entries(words).entries())
+      if (word != cur_word)
+        html += `<tr>
+        <td style="width: 20%">${index + 1}º</td>
+        <td style="width: 60%">${word}</td>
+        <td style="text-align: right">${fmt(weight)}</td>
+        </tr>`;
+      else
+        html += `<tr>
+        <td style="width: 20%"><b>${index+1}º</b></td>
+        <td style="width: 60%"><b>${word}</b></td>
+        <td style="text-align: right"><b>${fmt(weight)}</b></td>
+        </tr>`;
+
+    html += "</table>";
+    html += "</div>";
+    return html;
   }
 
   tooltip = (selection) => {
-    const tooltip = d3.select("#tooltip");
+    const tooltip = d3.select(`#${this.innerId}-tooltip`);
     selection
-       .on("mouseover", (e, data) => {
-          const t = d3.transition().duration(400).ease(d3.easeLinear);
-          tooltip
-          .html(this.tooltipHtml(data.x))
+      .on("mouseover", (e, data) => {
+        const t = d3.transition().duration(400).ease(d3.easeLinear);
+        tooltip
+          .html(this.tooltipHtml(data))
           .style("visibility", "visible")
           .style("opacity", 0)
           .transition(t)
           .style("opacity", 1)
-        })
-        .on("mousemove", e => {
-          tooltip
-            .style("visibility", "visible")
-            .style("left", e.pageX + 20 + "px")
-            .style("top", e.pageY + "px");
-        })
-        .on("mouseout", () => {
-          const t = d3.transition().duration(400).ease(d3.easeLinear)
-          tooltip
+      })
+      .on("mousemove", e => {
+        tooltip
+          .style("visibility", "visible")
+          .style("left", e.pageX + 20 + "px")
+          .style("top", e.pageY + "px");
+      })
+      .on("mouseout", () => {
+        const t = d3.transition().duration(400).ease(d3.easeLinear)
+        tooltip
           .style("opacity", 1)
           .transition(t)
           .style("opacity", 0)
           .style("visibility", "hidden");
-        });
+      });
 
     return selection;
   }

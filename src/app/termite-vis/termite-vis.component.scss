@@ -1,15 +1,7 @@
-
-#tooltip {
-    background-color: rgb(46, 43, 43);
-    border-radius: 5px;
-    color: white;
-    width: 200px;
-    position: absolute;
-    pointer-events: none;
-    padding: 5px;
+.invisible {
     visibility: hidden;
 }
 
-.invisible {
-    visibility: hidden;
+.w-200 {
+    width: 200px;
 }

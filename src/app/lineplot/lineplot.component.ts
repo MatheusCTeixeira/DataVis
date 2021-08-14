@@ -7,7 +7,7 @@ import { Dimension } from '../types/dimension';
 @Component({
   selector: 'app-lineplot',
   templateUrl: './lineplot.component.html',
-  styleUrls: ['./lineplot.component.scss']
+  styleUrls: ['./lineplot.component.scss', '../tooltip.scss']
 })
 export class LineplotComponent implements OnInit {
   @Input()
@@ -52,7 +52,7 @@ export class LineplotComponent implements OnInit {
 
   display: boolean = false;
 
-  constructor() { }
+  constructor(private _decPipe: DecimalPipe) { }
 
   ngOnInit() {
   }
@@ -143,27 +143,7 @@ export class LineplotComponent implements OnInit {
       this.addLegend(svg);
       this.addXLabel(svg);
       this.addYLabel(svg);
-
-      const self = this;
-
-      const line = svg.append("g").append("line")
-        .attr("x1", 0)
-        .attr("x2", 0)
-        .attr("y1", vScale(0))
-        .attr("y2", vScale(1.2 * this.maxValue))
-        .attr("stroke", "black")
-        .attr("stroke-dasharray", 2 + " " + 2)
-        .attr("stroke-width", 1);
-
-      const labels = svg.append("g").classed("text", true).append("text");
-
-      svg.append("rect")
-        .attr("x", this.margin.left)
-        .attr("y", vScale(1.2 * this.maxValue))
-        .attr("width", hScale(36) - hScale(1) - 20)
-        .attr("height", vScale(0) - vScale(1.2 * this.maxValue))
-        .attr("fill", "transparent")
-        .on("mouseover", function(e, data) {self.tooltip(d3.select(this), labels, line, hScale, vScale);})
+      this.addValueIndicator(svg, vScale, hScale);
 
       this.display = true;
   }
@@ -175,6 +155,34 @@ export class LineplotComponent implements OnInit {
       .attr("x", this.width/2)
       .attr("y", this.margin.top/2)
       .attr("text-anchor", "middle");
+  }
+
+  addValueIndicator(selection, vScale, hScale) {
+    const line = selection.append("g").append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", vScale(0))
+        .attr("y2", vScale(1.2 * this.maxValue))
+        .attr("stroke", "black")
+        .attr("stroke-dasharray", 10 + " " + 2)
+        .attr("stroke-width", 2)
+        .style("visibility", "hidden");
+
+    const labels = selection.append("g")
+      .classed("text", true)
+      .append("text");
+
+    const self = this;
+
+    selection.append("rect")
+        .attr("x", this.margin.left)
+        .attr("y", vScale(1.2 * this.maxValue))
+        .attr("width", hScale(36) - hScale(1) - 20)
+        .attr("height", vScale(0) - vScale(1.2 * this.maxValue))
+        .attr("fill", "transparent")
+        .on("mouseover", function(e, data) {
+          self.tooltip(d3.select(this), labels, line, hScale, vScale);
+        })
   }
 
   addXLabel(selection) {
@@ -203,22 +211,56 @@ export class LineplotComponent implements OnInit {
     return (value / (Math.pow(10, 3 * idx))).toString() + ["", "k", "M", "B"][idx];
   }
 
+  tooltipHtml(colors, legends, week, values) {
+    const fmt = (x) => this._decPipe.transform(x ?? 0, '1.2-2');
+
+    let html = `<div>
+    <div style="width: 100%; text-align: center;"><b>ESTATÍSTICAS</b></div>
+    <div>${week}ª semana</div>`;
+
+      for (let [index, v] of d3.zip(colors, legends, values).sort((l, r) => +r[2] - +l[2]).entries())
+        html += `
+          <div>
+            <span style='display: inline-block;padding: 0px 2px; margin: 1px;background-color: ${v[0]};'>${index+1}º</span>
+            ${v[1]}: ${fmt(v[2])}
+        </div>`;
+
+    html += "</div>"
+
+    return html;
+  }
+
   tooltip(selection, svg, line, hScale, vScale) {
+    const tooltip = d3.select("#tooltip");
     selection
-      .on("mousemove", (e, data) => {
-        line.attr("x1", e.offsetX)
-            .attr("x2", e.offsetX);
+      .on("mouseover", function() {
+        tooltip.style("visibility", "visible");
+        line.style("visibility", "visible");
+      })
+      .on("mousemove", e => {
 
         const week = Math.round(hScale.invert(e.offsetX));
-        const values = this.data.map(serie => serie.filter(d => d[0] === week)[0]);
+        const values = this.data
+          .map(serie => serie.filter(d => d[0] === week)[0])
+          .map(v => v[1]);
 
-        svg.text(values.reduce((l, r) => `${l}${r[1].toFixed(2)}, `, ""))
-            .attr("x", e.offsetX)
-            .attr("y", line.attr("y2"))
-            .attr("text-anchor", "middle")
-            .attr("font-size", 10);
+        tooltip
+          .html(this.tooltipHtml(this.color, this.legend, week, values))
+          .style("left", e.pageX + 20 + "px")
+          .style("top", e.pageY + "px")
+          .style("visibility", "visible")
+          .style("opacity", 1);
+
+        line.attr("x1", e.offsetX)
+            .attr("x2", e.offsetX)
+            .style("visibility", "visible")
+            .style("opacity", 1);
       }
-      );
+      )
+      .on("mouseout", function() {
+        tooltip.style("visibility", "hidden");
+        line.style("visibility", "hidden");
+      });
   }
 
 }

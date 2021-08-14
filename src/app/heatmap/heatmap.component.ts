@@ -159,12 +159,14 @@ export class HeatmapComponent implements OnInit {
         .attr("transform", `translate(${0}, ${this.margin.top})`)
         .call(axisTop)
       .selectAll("text")
-        .attr("class", "ticks")
+        .attr("class", "hTicks")
         .attr("dominant-baseline", "hanging")
         .attr("text-anchor", "start")
         .attr("transform", "translate(5, -10) rotate(-60)")
         .style("cursor", "pointer")
         .on("click", d => {
+          d3.selectAll("text.hTicks").style("color", "black");
+          d3.select(d.srcElement).style("color", "red");
           const feature = d3.select(d.srcElement).html();
           this.sortByFeature(feature);
 
@@ -189,13 +191,12 @@ export class HeatmapComponent implements OnInit {
       .attr("transform", `translate(${this.margin.left}, ${0})`)
       .call(axisLeft);
 
-      console.log("scale", scaleH.bandwidth(), scaleV.bandwidth());
     return [scaleH, scaleV];
   }
 
   private nTicks(axis: d3.Axis<any>, domain: number[], n: number) {
     const step = Math.round(domain.length / n);
-    axis.tickValues(domain.filter((_, i) => i % step == 0));
+    axis.tickValues(domain.filter((_, i) => i % 10 == 0));
     return axis;
   }
 
@@ -206,11 +207,12 @@ export class HeatmapComponent implements OnInit {
     this.preprocessed_data = this.preprocessed_data.sort(function (l,r) {
       const lGroup = l[1][feature_idx][2];
       const rGroup = r[1][feature_idx][2];
-      return rGroup - lGroup;
+      if (lGroup !== rGroup)
+        return rGroup - lGroup;
+      else
+        return l[1][feature_idx][1] - r[1][feature_idx][1];
     });
   }
-
-
 
   genBlocks(selection, scaleX: any, scaleY: any, previousScaleY: any = null, threshold: [number, number]=null) {
     const t = d3.transition().duration(750).ease(d3.easeLinear);
