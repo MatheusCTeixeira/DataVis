@@ -107,18 +107,28 @@ div.footer {
 
 ul.topics {
     list-style-type: none;
+    margin-left: 40%;
 
     li {
+        border: 1px solid transparent;
         position: relative;
-        left: 50%;
         font-size: 14px;
         color: rgb(112, 101, 101);
-        height: 40px;
-        width: 50%;
+        padding: 5px;
+        margin: 10px 0;
     }
 
     li:hover {
+        border-bottom: 1px solid transparent;
+        border-image: linear-gradient(to right, rgb(63, 61, 61) , rgb(255, 255, 255));
+        border-image-slice: 1;
+
+        color: #000;
         cursor: pointer;
+    }
+
+    .subtopic {
+        padding-left: 30px;
     }
 }
 

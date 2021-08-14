@@ -9,12 +9,17 @@
 <div class="body">
   <div class="left sticky">
     <ul class="topics">
-      <li><a href="#introducao">Introdução</a></li>
-      <li><a href="#dados">Dados</a></li>
-      <li><a href="#bots">Bots</a></li>
-      <li><a href="#polarizacao">Polarização</a></li>
-      <li><a href="#caracterizacao">Caracterização</a></li>
-      <li><a href="#conclusao">Conclusão</a></li>
+      <a href="#introducao"><li>Introdução</li></a>
+      <a href="#dados"><li>Dados</li></a>
+      <a href="#bots"><li>Bots</li></a>
+      <a href="#polarizacao"><li>Polarização</li></a>
+      <a href="#caracterizacao"><li>Caracterização</li></a>
+      <a href="#comportamento_usuarios"><li class="subtopic">Comportamento dos usuários</li></a>
+      <a href="#padrao_temporal_comportamento"><li class="subtopic">Padrões Temporais</li></a>
+      <a href="#perfil_usuarios"><li class="subtopic">Perfis dos usuários</li></a>
+      <a href="#localizacao_geografica_usuarios"><li class="subtopic">Comportamento dos usuários</li></a>
+      <a href="#analise_topicos"><li class="subtopic">Análise de Tópicos</li></a>
+      <a href="#conclusao"><li>Conclusão</li></a>
     </ul>
   </div>
 
@@ -150,7 +155,7 @@
         reflete os resultados de muitas processos eleitorais ao longo do ano, isto
         é, determinados estado possui uma polaridade política característica.
       </p>
-      <h4>Comportamento dos usuários</h4>
+      <h4 id="comportamento_usuarios">Comportamento dos usuários</h4>
       <p class="hidable">
         Nesta seção apresentamos a quantidade de tweets publicada por cada grupo
         (contra, a favor e bot) ao longo da pesquisa. Quando análisado em valores
@@ -205,7 +210,8 @@
         innerId="fig_2">
       </app-lineplot>
       </div>
-      <h4>Padrões temporal de comportamento</h4>
+
+      <h4 id="padrao_temporal_comportamento">Padrões temporal de comportamento</h4>
       <p class="hidable">
         Nesta seção estudamos sobre os hábitos dos usuários. O Radar plot abaixo
         apresenta a quantidade de tweets de todos os usuários ao longo das 36 semanas
@@ -248,7 +254,7 @@
 
       </div>
 
-      <h4>Perfis dos usuários</h4>
+      <h4 id="perfil_usuarios">Perfis dos usuários</h4>
       <p class="hidable">
         No gráfico abaixo nós apresentamos a quantidade de usuários de cada sexo
         ao longo das semanas. A inferência do sexo foi feita a partir do
@@ -273,7 +279,7 @@
           >
       </app-barplot>
 
-      <h4>Localização geográfica dos usuários</h4>
+      <h4 id="localizacao_geografica_usuarios">Localização geográfica dos usuários</h4>
       <p class="hidable">
         Os gráficos abaixo indicam a quantidade de tweets de cada estado do país.
         É possível notar que com o passar das semanas a quantidade de tweets cai
@@ -309,7 +315,7 @@
         [show]="usersPolarityLoaded && tweetsCoords && userLocsLoaded && mapLoaded">
       </app-map>
 
-      <h4>Análise de Tópicos</h4>
+      <h4 id="analise_topicos">Análise de Tópicos</h4>
       <p class="hidable">
         Por fim, nós analisamos os tópicos dos tweets publicados em cada semana,
         porém devido a problemas de escalabilidade não foi possível coletar os
